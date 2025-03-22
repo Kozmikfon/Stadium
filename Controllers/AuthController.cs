@@ -4,7 +4,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Stadyum.API.Config;
+using Stadyum.API.Models;
+using Stadyum.API.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity.Data;
 
 
 
@@ -12,30 +15,33 @@ namespace Stadyum.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController:ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly JwtSettings _jwtSettings;
-        public AuthController(IConfiguration configuration)
+        private readonly StadyumDbContext _context;
+        public AuthController(IConfiguration configuration, StadyumDbContext context)
         {
             _jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
+            _context = context;
         }
         [HttpPost("login")]
-        public IActionResult Login(string email,string password)
+        public IActionResult Login([FromBody] LoginRequest request)
         {
-            // basit doğrulama veritabanı üzerinden kontrol yapacağız
-            if(email=="demo@gmail.com" && password == "12345")
+            var user = _context.Users.FirstOrDefault(u => u.Email == request.Email && u.PasswordHash == request.Password);
+            if (user == null)
             {
-                var token = GenerateJwtToken(email);
-                return Ok(new {Token=token });
+                return Unauthorized("Kullanıcı adı veya şifre hatalı");
             }
-            return Unauthorized("Kullanıcı adı veya şifre yanlış");
+            var token = GenerateJwtToken(user);
+            return Ok(new { Token = token });
         }
-        private string GenerateJwtToken(string email) 
+        private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub,email),
-                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Sub,user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+                new Claim("UserId",user.Id.ToString())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.key));
@@ -47,9 +53,14 @@ namespace Stadyum.API.Controllers
                 audience: _jwtSettings.Audience,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(_jwtSettings.ExpirationInMinutes),
-                signingCredentials: credentials 
+                signingCredentials: credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+    }
+    public class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }
