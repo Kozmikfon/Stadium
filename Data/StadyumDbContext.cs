@@ -14,6 +14,9 @@ namespace Stadyum.API.Data
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Offer> Offers { get; set; }
+       
+
+
 
     }
 
