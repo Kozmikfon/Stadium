@@ -12,7 +12,7 @@ using Stadyum.API.Data;
 namespace Stadyum.API.Migrations
 {
     [DbContext(typeof(StadyumDbContext))]
-    [Migration("20250320005611_InitialCreate")]
+    [Migration("20250323011328_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,167 +25,166 @@ namespace Stadyum.API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Stadyum.API.Models.Match", b =>
+            modelBuilder.Entity("Stadyum.API.Models.match", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("FieldName")
+                    b.Property<string>("fieldname")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("MatchDate")
+                    b.Property<DateTime>("matchdate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Team1Id")
+                    b.Property<int>("team1id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Team2Id")
+                    b.Property<int>("team2id")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
-                    b.ToTable("Matches");
+                    b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("Stadyum.API.Models.Offer", b =>
+            modelBuilder.Entity("Stadyum.API.Models.offer", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<int>("MatchId")
+                    b.Property<int>("matchid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ReceiverId")
+                    b.Property<int>("receiverid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("SenderId")
+                    b.Property<int>("senderid")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
-                    b.ToTable("Offers");
+                    b.ToTable("offers");
                 });
 
-            modelBuilder.Entity("Stadyum.API.Models.Review", b =>
+            modelBuilder.Entity("Stadyum.API.Models.review", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("Comment")
+                    b.Property<string>("comment")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("MatchId")
+                    b.Property<int>("matchid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Rating")
+                    b.Property<int>("rating")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ReviewedTeamId")
+                    b.Property<int?>("reviewedteamid")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ReviewedUserId")
+                    b.Property<int?>("revieweduserid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ReviewerId")
+                    b.Property<int>("reviewerid")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("reviews");
                 });
 
-            modelBuilder.Entity("Stadyum.API.Models.Team", b =>
+            modelBuilder.Entity("Stadyum.API.Models.team", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("CaptainId")
+                    b.Property<int>("captainid")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.HasKey("id");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Teams");
+                    b.ToTable("teams");
                 });
 
-            modelBuilder.Entity("Stadyum.API.Models.TeamMember", b =>
+            modelBuilder.Entity("Stadyum.API.Models.teammember", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<int>("TeamId")
+                    b.Property<int>("teamid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("userid")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
-                    b.ToTable("TeamMembers");
+                    b.ToTable("teammembers");
                 });
 
-            modelBuilder.Entity("Stadyum.API.Models.User", b =>
+            modelBuilder.Entity("Stadyum.API.Models.user", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("firstname")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("lastname")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("passwordhash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Position")
+                    b.Property<string>("position")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<float>("Rating")
+                    b.Property<float>("rating")
                         .HasColumnType("real");
 
-                    b.Property<int>("SkillLevel")
+                    b.Property<int>("skilllevel")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
 
-                    b.ToTable("Users");
+                    b.ToTable("users");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,6 +8,7 @@ using Stadyum.API.Models;
 using Stadyum.API.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
 
 
 
@@ -25,6 +26,8 @@ namespace Stadyum.API.Controllers
             _context = context;
         }
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Login([FromBody] LoginRequest request)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == request.Email && u.PasswordHash == request.Password);
@@ -41,10 +44,11 @@ namespace Stadyum.API.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                new Claim("UserId",user.Id.ToString())
+                new Claim("UserId",user.Id.ToString()),
+                new Claim(ClaimTypes.Role,"Admin")
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.key));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken
@@ -57,7 +61,15 @@ namespace Stadyum.API.Controllers
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        [HttpGet("admin")]
+        [Authorize(Roles="Admin")]
+        public IActionResult GetAdminData()
+        {
+            return Ok("Bu endpoint sadece admin rolüne sahip kullanıcılar için!");
+        }
+
     }
+
     public class LoginRequest
     {
         public string Email { get; set; }
