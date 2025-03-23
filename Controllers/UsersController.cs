@@ -3,6 +3,8 @@ using Stadyum.API.Models;
 using Stadyum.API.Data;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+
 
 
 namespace Stadyum.API.Controllers
@@ -18,32 +20,73 @@ namespace Stadyum.API.Controllers
             _context = context;
         }
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        
         public IActionResult GetUsers()
         {
-            var users = _context.Users.ToList();
+            var users = _context.Users
+                .AsNoTracking() // İzlemeyi kapatıyoruz
+                .ToList();
+
+            if (!users.Any())
+            {
+                return NotFound("Hiç kullanıcı bulunamadı!");
+            }
+
             return Ok(users);
         }
+
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        
         public IActionResult AddUser(User user)
         {
             _context.Users.Add(user);
-            _context.SaveChanges();
-            return Ok(user);
+            var result = _context.SaveChanges();
+
+            if (result > 0)
+            {
+                return Ok(user);
+            }
+            return BadRequest("Kullanıcı kaydedilemedi.");
         }
         [HttpGet("secure")]
         [Authorize]
-        public IActionResult GetSecureData() { 
+        public IActionResult GetSecureData() {
+
+            var token = Request.Headers["Authorization"];
+            Console.WriteLine($"Gelen Token: {token}");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Token gelmedi veya eksik.");
+            }
             var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
             var email = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+            var role = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
+            
+            
+            //Console.WriteLine($"Token Doğrulandı: UserId = {userId}, Email = {email}, Role = {role}");
+            if (userId == null || email == null)
+            {
+                return Unauthorized("Token geçersiz veya claim eksik!");
+            }
             return Ok(new
             { 
                 Message= "Bu endpoint başarılı!",
                 UserId = userId,
-                Email = email
+                Email = email,
+                Role = role
             });
+
+            
+
         }
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetAdminData()
+        {
+            return Ok("Bu endpoint'e sadece Admin erişebilir!");
+        }
+
     }
 }

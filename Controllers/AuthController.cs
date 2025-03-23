@@ -38,14 +38,14 @@ namespace Stadyum.API.Controllers
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, string role = "User")
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                new Claim("UserId",user.Id.ToString()),
-                new Claim(ClaimTypes.Role,"Admin")
+                new Claim("userId",user.Id.ToString()),
+                new Claim("role",role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -59,15 +59,10 @@ namespace Stadyum.API.Controllers
                 expires: DateTime.Now.AddMinutes(_jwtSettings.ExpirationInMinutes),
                 signingCredentials: credentials
                 );
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-        [HttpGet("admin")]
-        [Authorize(Roles="Admin")]
-        public IActionResult GetAdminData()
-        {
-            return Ok("Bu endpoint sadece admin rolüne sahip kullanıcılar için!");
-        }
+            Console.WriteLine("Oluşturulan Token: " + new JwtSecurityTokenHandler().WriteToken(token));
 
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }       
     }
 
     public class LoginRequest
