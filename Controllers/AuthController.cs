@@ -9,6 +9,7 @@ using Stadyum.API.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Authorization;
+using LoginRequest = Stadyum.API.Models.LoginRequest;
 
 
 
@@ -26,10 +27,17 @@ namespace Stadyum.API.Controllers
             _context = context;
         }
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        
         public IActionResult Login([FromBody] LoginRequest request)
         {
+            Console.WriteLine($"Gelen Email: {request.Email}");
+            Console.WriteLine($"Gelen Password: {request.Password}");
+
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Email veya şifre boş olamaz!");
+            }
+
             var user = _context.Users.FirstOrDefault(u => u.Email == request.Email && u.PasswordHash == request.Password);
             if (user == null)
             {
@@ -38,14 +46,14 @@ namespace Stadyum.API.Controllers
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
-        private string GenerateJwtToken(User user, string role = "User")
+        private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim("userId",user.Id.ToString()),
-                new Claim("role",role)
+                new Claim("role","User")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -63,11 +71,5 @@ namespace Stadyum.API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }       
-    }
-
-    public class LoginRequest
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
     }
 }

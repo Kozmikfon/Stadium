@@ -31,7 +31,11 @@ builder.Services.AddAuthorization();
 
 //  DbContext Ayarlarý (Database Baðlantýsý)
 builder.Services.AddDbContext<StadyumDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .EnableSensitiveDataLogging() //  Hassas verileri gösterir
+        .EnableDetailedErrors()); 
+    
+    
 
 //  Swagger Yapýlandýrmasý
 builder.Services.AddEndpointsApiExplorer();
@@ -72,6 +76,10 @@ builder.Services.AddSwaggerGen(c =>
 
 //  Controller Tanýmý
 builder.Services.AddControllers();
+
+builder.Logging.AddConsole()
+    .SetMinimumLevel(LogLevel.Debug);
+
 
 var app = builder.Build();
 
