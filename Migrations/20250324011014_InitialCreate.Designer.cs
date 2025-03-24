@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stadyum.API.Data;
@@ -11,9 +12,11 @@ using Stadyum.API.Data;
 namespace Stadyum.API.Migrations
 {
     [DbContext(typeof(StadyumDbContext))]
-    partial class StadyumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250324011014_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
