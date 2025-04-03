@@ -30,5 +30,7 @@ namespace Stadyum.API.Models
 
         public DateTime CreateAd { get; set; } = DateTime.UtcNow;
 
+        public int? TeamId { get; set; } // Foreign key
+        public Team? Team { get; set; }  // Navigation property
     }
 }

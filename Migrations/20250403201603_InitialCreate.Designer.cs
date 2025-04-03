@@ -12,7 +12,7 @@ using Stadyum.API.Data;
 namespace Stadyum.API.Migrations
 {
     [DbContext(typeof(StadyumDbContext))]
-    [Migration("20250324011014_InitialCreate")]
+    [Migration("20250403201603_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -48,7 +48,7 @@ namespace Stadyum.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Matches");
+                    b.ToTable("Matches", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.Offer", b =>
@@ -74,7 +74,7 @@ namespace Stadyum.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Offers");
+                    b.ToTable("Offers", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.Player", b =>
@@ -112,7 +112,12 @@ namespace Stadyum.API.Migrations
                     b.Property<int>("SkillLevel")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("Players");
                 });
@@ -146,7 +151,7 @@ namespace Stadyum.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.Team", b =>
@@ -157,17 +162,19 @@ namespace Stadyum.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CaptainId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("CaptainId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teams");
+                    b.HasIndex("CaptainId");
+
+                    b.ToTable("Teams", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.TeamMember", b =>
@@ -186,7 +193,7 @@ namespace Stadyum.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TeamMembers");
+                    b.ToTable("TeamMembers", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.User", b =>
@@ -225,7 +232,30 @@ namespace Stadyum.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Stadyum.API.Models.Player", b =>
+                {
+                    b.HasOne("Stadyum.API.Models.Team", null)
+                        .WithMany("Players")
+                        .HasForeignKey("TeamId");
+                });
+
+            modelBuilder.Entity("Stadyum.API.Models.Team", b =>
+                {
+                    b.HasOne("Stadyum.API.Models.Player", "Captain")
+                        .WithMany()
+                        .HasForeignKey("CaptainId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Captain");
+                });
+
+            modelBuilder.Entity("Stadyum.API.Models.Team", b =>
+                {
+                    b.Navigation("Players");
                 });
 #pragma warning restore 612, 618
         }
