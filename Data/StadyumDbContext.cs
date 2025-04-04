@@ -17,7 +17,6 @@ namespace Stadyum.API.Data
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Offer> Offers { get; set; }
-
         public DbSet<Player> Players { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,11 +24,25 @@ namespace Stadyum.API.Data
             modelBuilder.Entity<Match>().ToTable("Matches");
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Team>().ToTable("Teams");
+            modelBuilder.Entity<Player>().ToTable("Players");
             modelBuilder.Entity<Offer>().ToTable("Offers");
             modelBuilder.Entity<Review>().ToTable("Reviews");
             modelBuilder.Entity<TeamMember>().ToTable("TeamMembers");
+
+            // Player <-> Team ilişkisi
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.Team)
+                .WithMany(t => t.Players)
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Team-Captain (Player) ilişkisi
+            modelBuilder.Entity<Team>()
+                .HasOne(t => t.Captain)
+                .WithMany()
+                .HasForeignKey(t => t.CaptainId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }
-
 }

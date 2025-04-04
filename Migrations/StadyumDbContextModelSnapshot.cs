@@ -116,7 +116,7 @@ namespace Stadyum.API.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Players");
+                    b.ToTable("Players", (string)null);
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.Review", b =>
@@ -234,9 +234,12 @@ namespace Stadyum.API.Migrations
 
             modelBuilder.Entity("Stadyum.API.Models.Player", b =>
                 {
-                    b.HasOne("Stadyum.API.Models.Team", null)
+                    b.HasOne("Stadyum.API.Models.Team", "Team")
                         .WithMany("Players")
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Stadyum.API.Models.Team", b =>
@@ -244,7 +247,7 @@ namespace Stadyum.API.Migrations
                     b.HasOne("Stadyum.API.Models.Player", "Captain")
                         .WithMany()
                         .HasForeignKey("CaptainId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Captain");

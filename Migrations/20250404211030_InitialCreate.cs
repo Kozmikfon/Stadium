@@ -132,7 +132,7 @@ namespace Stadyum.API.Migrations
                         column: x => x.CaptainId,
                         principalTable: "Players",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -150,7 +150,8 @@ namespace Stadyum.API.Migrations
                 table: "Players",
                 column: "TeamId",
                 principalTable: "Teams",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />

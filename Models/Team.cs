@@ -10,14 +10,15 @@ namespace Stadyum.API.Models
 
         [Required]
         [MaxLength(50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        [Required]
+        // Captain ilişkisi
         public int CaptainId { get; set; }
 
         [ForeignKey("CaptainId")]
-        public Player Captain { get; set; }
+        public Player? Captain { get; set; }
 
+        // Oyuncular listesi
         public ICollection<Player> Players { get; set; } = new List<Player>();
     }
 }
