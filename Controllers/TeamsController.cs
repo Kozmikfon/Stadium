@@ -73,5 +73,33 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
+        // Controllers/TeamsController.cs
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTeam(int id, [FromBody] TeamUpdateDTO dto)
+        {
+            var team = await _context.Teams.FindAsync(id);
+            if (team == null)
+                return NotFound();
+
+            team.Name = dto.Name;
+            team.CaptainId = dto.CaptainId;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Teams.Any(t => t.Id == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+
+            return NoContent();
+        }
+
     }
 }

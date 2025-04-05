@@ -141,15 +141,27 @@ namespace Stadyum.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlayer(int id)
         {
-            var player = await _context.Players.FindAsync(id);
+            var player = await _context.Players
+                .Include(p => p.Team) // İlişkili takımı da getir
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (player == null)
                 return NotFound();
+
+            // Bu oyuncu bir takımın kaptanıysa, kaptanlığı kaldır
+            var teamWhereCaptain = await _context.Teams.FirstOrDefaultAsync(t => t.CaptainId == id);
+            if (teamWhereCaptain != null)
+            {
+                teamWhereCaptain.CaptainId = null;
+            }
 
             _context.Players.Remove(player);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
+
 
         private bool PlayerExists(int id)
         {
