@@ -1,8 +1,7 @@
 ﻿namespace Stadyum.API.Models.DTOs
 {
-    public class PlayerDTO
+    public class PlayerUpdateDTO
     {
-        public int Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -11,9 +10,5 @@
         public float Rating { get; set; }
         public DateTime CreateAd { get; set; }
         public int? TeamId { get; set; }
-        public string? TeamName { get; set; } // ekstra gösterim için
     }
-
-    // İç içe detay göstermemek için sadeleştirilmiş Team
-    
 }

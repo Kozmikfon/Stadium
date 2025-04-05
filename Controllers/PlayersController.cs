@@ -24,16 +24,62 @@ namespace Stadyum.API.Controllers
 
 
 
-        // GET: api/Players
+        // 🔹 Tüm oyuncuları DTO ile getir
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers()
+        public async Task<ActionResult<IEnumerable<PlayerDTO>>> GetPlayers()
         {
-            return await _context.Players.ToListAsync();
+            var players = await _context.Players
+                .Include(p => p.Team)
+                .Select(p => new PlayerDTO
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Email = p.Email,
+                    Position = p.Position,
+                    SkillLevel = p.SkillLevel,
+                    Rating = p.Rating,
+                    CreateAd = p.CreateAd,
+                    TeamId = p.TeamId,
+                    TeamName = p.Team != null ? p.Team.Name : null
+                })
+                .ToListAsync();
+
+            return Ok(players);
         }
 
-        // GET: api/Players/5
+
+        // 🔹 Belirli oyuncuyu DTO ile getir
         [HttpGet("{id}")]
-        public async Task<ActionResult<Player>> GetPlayer(int id)
+        public async Task<ActionResult<PlayerDTO>> GetPlayer(int id)
+        {
+            var player = await _context.Players
+                .Include(p => p.Team)
+                .Where(p => p.Id == id)
+                .Select(p => new PlayerDTO
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    Email = p.Email,
+                    Position = p.Position,
+                    SkillLevel = p.SkillLevel,
+                    Rating = p.Rating,
+                    CreateAd = p.CreateAd,
+                    TeamId = p.TeamId,
+                    TeamName = p.Team != null ? p.Team.Name : null
+                })
+                .FirstOrDefaultAsync();
+
+            if (player == null)
+                return NotFound();
+
+            return Ok(player);
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPlayer(int id, PlayerUpdateDTO dto)
         {
             var player = await _context.Players.FindAsync(id);
 
@@ -42,20 +88,15 @@ namespace Stadyum.API.Controllers
                 return NotFound();
             }
 
-            return player;
-        }
-
-        // PUT: api/Players/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPlayer(int id, Player player)
-        {
-            if (id != player.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(player).State = EntityState.Modified;
+            // Güncelleme
+            player.FirstName = dto.FirstName;
+            player.LastName = dto.LastName;
+            player.Email = dto.Email;
+            player.Position = dto.Position;
+            player.SkillLevel = dto.SkillLevel;
+            player.Rating = dto.Rating;
+            player.CreateAd = dto.CreateAd;
+            player.TeamId = dto.TeamId;
 
             try
             {
@@ -64,20 +105,16 @@ namespace Stadyum.API.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!PlayerExists(id))
-                {
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
         }
 
-        // POST: api/Players
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
+        // 🔹 Yeni oyuncu oluştur
         [HttpPost]
         public async Task<ActionResult<Player>> PostPlayer(PlayerCreateDTO dto)
         {
@@ -93,30 +130,20 @@ namespace Stadyum.API.Controllers
                 TeamId = dto.TeamId
             };
 
-            try
-            {
-                _context.Players.Add(player);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message });
-            }
-
+            _context.Players.Add(player);
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetPlayer), new { id = player.Id }, player);
         }
 
 
-        // DELETE: api/Players/5
+        // 🔹 Oyuncu sil
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlayer(int id)
         {
             var player = await _context.Players.FindAsync(id);
             if (player == null)
-            {
                 return NotFound();
-            }
 
             _context.Players.Remove(player);
             await _context.SaveChangesAsync();
