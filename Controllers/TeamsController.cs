@@ -17,20 +17,51 @@ namespace Stadyum.API.Controllers
             _context = context;
         }
 
-        // 🔹 Tüm takımları getir
+        // 🔹 Tüm takımları getir (DTO ile)
         [HttpGet]
         public async Task<IActionResult> GetAllTeams()
         {
             var teams = await _context.Teams
                 .Include(t => t.Players)
-                 .Include(t => t.Captain) // kaptanı da ekle
+                .Include(t => t.Captain)
+                .Select(t => new TeamDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    CaptainId = t.Captain.Id,
+                    Captain = new PlayerDTO
+                    {
+                        Id = t.Captain.Id,
+                        FirstName = t.Captain.FirstName,
+                        LastName = t.Captain.LastName,
+                        Email = t.Captain.Email,
+                        Position = t.Captain.Position,
+                        SkillLevel = t.Captain.SkillLevel,
+                        Rating = t.Captain.Rating,
+                        CreateAd = t.Captain.CreateAd,
+                        TeamId = t.Captain.TeamId,
+                        TeamName = t.Name
+                    },
+                    Players = t.Players.Select(p => new PlayerDTO
+                    {
+                        Id = p.Id,
+                        FirstName = p.FirstName,
+                        LastName = p.LastName,
+                        Email = p.Email,
+                        Position = p.Position,
+                        SkillLevel = p.SkillLevel,
+                        Rating = p.Rating,
+                        CreateAd = p.CreateAd,
+                        TeamId = p.TeamId,
+                        TeamName = t.Name
+                    }).ToList()
+                })
                 .ToListAsync();
 
             return Ok(teams);
         }
 
         // 🔹 Yeni takım oluştur
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> CreateTeam([FromBody] TeamCreateDTO dto)
         {
@@ -42,16 +73,49 @@ namespace Stadyum.API.Controllers
 
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, team);
         }
 
-
-        // 🔹 Tekil takım getir
+        // 🔹 Tekil takımı getir (DTO ile)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTeamById(int id)
         {
             var team = await _context.Teams
                 .Include(t => t.Players)
+                .Include(t => t.Captain)
+                .Select(t => new TeamDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    CaptainId = t.Captain.Id,
+                    Captain = new PlayerDTO
+                    {
+                        Id = t.Captain.Id,
+                        FirstName = t.Captain.FirstName,
+                        LastName = t.Captain.LastName,
+                        Email = t.Captain.Email,
+                        Position = t.Captain.Position,
+                        SkillLevel = t.Captain.SkillLevel,
+                        Rating = t.Captain.Rating,
+                        CreateAd = t.Captain.CreateAd,
+                        TeamId = t.Captain.TeamId,
+                        TeamName = t.Name
+                    },
+                    Players = t.Players.Select(p => new PlayerDTO
+                    {
+                        Id = p.Id,
+                        FirstName = p.FirstName,
+                        LastName = p.LastName,
+                        Email = p.Email,
+                        Position = p.Position,
+                        SkillLevel = p.SkillLevel,
+                        Rating = p.Rating,
+                        CreateAd = p.CreateAd,
+                        TeamId = p.TeamId,
+                        TeamName = t.Name
+                    }).ToList()
+                })
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (team == null)
@@ -74,8 +138,7 @@ namespace Stadyum.API.Controllers
             return NoContent();
         }
 
-        // Controllers/TeamsController.cs
-
+        // 🔹 Takımı güncelle
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTeam(int id, [FromBody] TeamUpdateDTO dto)
         {
@@ -100,6 +163,5 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
-
     }
 }
