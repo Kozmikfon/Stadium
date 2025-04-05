@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stadyum.API.Data;
 using Stadyum.API.Models;
+using Stadyum.API.Models.DTOs;
 
 namespace Stadyum.API.Controllers
 {
@@ -78,13 +79,34 @@ namespace Stadyum.API.Controllers
         // POST: api/Players
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Player>> PostPlayer(Player player)
+        public async Task<ActionResult<Player>> PostPlayer(PlayerCreateDTO dto)
         {
-            _context.Players.Add(player);
-            await _context.SaveChangesAsync();
+            var player = new Player
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Position = dto.Position,
+                SkillLevel = dto.SkillLevel,
+                Rating = dto.Rating,
+                CreateAd = dto.CreateAd,
+                TeamId = dto.TeamId
+            };
 
-            return CreatedAtAction("GetPlayer", new { id = player.Id }, player);
+            try
+            {
+                _context.Players.Add(player);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message });
+            }
+
+
+            return CreatedAtAction(nameof(GetPlayer), new { id = player.Id }, player);
         }
+
 
         // DELETE: api/Players/5
         [HttpDelete("{id}")]

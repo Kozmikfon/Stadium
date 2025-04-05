@@ -81,6 +81,19 @@ builder.Logging.AddConsole()
     .SetMinimumLevel(LogLevel.Debug);
 
 
+// cors
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+
+
+
+
 var app = builder.Build();
 
 //  Middleware Yapýlandýrmasý (Sýralama Doðru)
@@ -94,7 +107,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication(); // JWT doðrulama
 app.UseAuthorization(); // Yetkilendirme
-
+app.UseCors("AllowAll");
 //  Endpoint Tanýmlamalarý
 app.MapControllers();
 

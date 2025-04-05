@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stadyum.API.Data;
 using Stadyum.API.Models;
+using Stadyum.API.Models.DTOs;
 
 namespace Stadyum.API.Controllers
 {
@@ -29,12 +30,20 @@ namespace Stadyum.API.Controllers
 
         // 🔹 Yeni takım oluştur
         [HttpPost]
-        public async Task<IActionResult> CreateTeam([FromBody] Team team)
+        [HttpPost]
+        public async Task<IActionResult> CreateTeam([FromBody] TeamCreateDTO dto)
         {
+            var team = new Team
+            {
+                Name = dto.Name,
+                CaptainId = dto.CaptainId
+            };
+
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
-            return Ok(team);
+            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, team);
         }
+
 
         // 🔹 Tekil takım getir
         [HttpGet("{id}")]

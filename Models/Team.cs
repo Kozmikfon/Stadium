@@ -13,7 +13,7 @@ namespace Stadyum.API.Models
         public string Name { get; set; } = string.Empty;
 
         // Captain ilişkisi
-        public int CaptainId { get; set; }
+        public int? CaptainId { get; set; }
 
         [ForeignKey("CaptainId")]
         public Player? Captain { get; set; }
