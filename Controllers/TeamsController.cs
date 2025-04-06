@@ -146,8 +146,23 @@ namespace Stadyum.API.Controllers
             if (team == null)
                 return NotFound();
 
-            team.Name = dto.Name;
-            team.CaptainId = dto.CaptainId;
+            // 🔐 Null kontrolü ile yalnızca dolu alanları güncelle
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+            {
+                team.Name = dto.Name;
+            }
+
+            if (dto.CaptainId.HasValue)
+            {
+                // Opsiyonel: Kaptan ID'si gerçekten geçerli bir oyuncuya ait mi kontrol edilebilir
+                var captainExists = await _context.Players.AnyAsync(p => p.Id == dto.CaptainId.Value);
+                if (!captainExists)
+                {
+                    return BadRequest("Belirtilen kaptan bulunamadı.");
+                }
+
+                team.CaptainId = dto.CaptainId.Value;
+            }
 
             try
             {
@@ -163,5 +178,7 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
+
     }
 }
