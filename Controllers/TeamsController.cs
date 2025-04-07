@@ -159,14 +159,21 @@ namespace Stadyum.API.Controllers
             // 🔹 Kaptan güncellemesi (gönderildiyse)
             if (dto.CaptainId.HasValue)
             {
-                var captainExists = await _context.Players.AnyAsync(p => p.Id == dto.CaptainId.Value);
-                if (!captainExists)
+                var captain = await _context.Players.FindAsync(dto.CaptainId.Value);
+                if (captain == null)
                     return BadRequest("Belirtilen kaptan bulunamadı.");
 
                 team.CaptainId = dto.CaptainId.Value;
-                Console.WriteLine($"Yeni isim: {team.Name}, Yeni kaptan ID: {team.CaptainId}");
 
+                // 🧠 Burada kaptanı takıma bağlayalım:
+                captain.TeamId = team.Id;
+
+                // Bu satırı ekleyerek EF'nin değişikliği izlemesini sağlıyoruz:
+                _context.Players.Update(captain);
             }
+
+
+
 
             try
             {
