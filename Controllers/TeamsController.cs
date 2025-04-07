@@ -29,7 +29,7 @@ namespace Stadyum.API.Controllers
                     Id = t.Id,
                     Name = t.Name,
                     CaptainId = t.Captain.Id,
-                    Captain = new PlayerDTO
+                    Captain = t.Captain != null ? new PlayerDTO
                     {
                         Id = t.Captain.Id,
                         FirstName = t.Captain.FirstName,
@@ -39,9 +39,10 @@ namespace Stadyum.API.Controllers
                         SkillLevel = t.Captain.SkillLevel,
                         Rating = t.Captain.Rating,
                         CreateAd = t.Captain.CreateAd,
-                        TeamId = t.Captain.TeamId,
-                        TeamName = t.Name
-                    },
+                        TeamId = t.Players.Any(p => p.Id == t.Captain.Id) ? t.Id : null,
+                        TeamName = t.Players.Any(p => p.Id == t.Captain.Id) ? t.Name : null
+                    } : null,
+
                     Players = t.Players.Select(p => new PlayerDTO
                     {
                         Id = p.Id,
@@ -60,6 +61,7 @@ namespace Stadyum.API.Controllers
 
             return Ok(teams);
         }
+
 
         // 🔹 Yeni takım oluştur
         [HttpPost]
@@ -89,7 +91,7 @@ namespace Stadyum.API.Controllers
                     Id = t.Id,
                     Name = t.Name,
                     CaptainId = t.Captain.Id,
-                    Captain = new PlayerDTO
+                    Captain = t.Captain != null ? new PlayerDTO
                     {
                         Id = t.Captain.Id,
                         FirstName = t.Captain.FirstName,
@@ -99,9 +101,10 @@ namespace Stadyum.API.Controllers
                         SkillLevel = t.Captain.SkillLevel,
                         Rating = t.Captain.Rating,
                         CreateAd = t.Captain.CreateAd,
-                        TeamId = t.Captain.TeamId,
-                        TeamName = t.Name
-                    },
+                        TeamId = t.Players.Any(p => p.Id == t.Captain.Id) ? t.Id : null,
+                        TeamName = t.Players.Any(p => p.Id == t.Captain.Id) ? t.Name : null
+                    } : null,
+
                     Players = t.Players.Select(p => new PlayerDTO
                     {
                         Id = p.Id,
@@ -123,6 +126,7 @@ namespace Stadyum.API.Controllers
 
             return Ok(team);
         }
+
 
         // 🔹 Takımı sil
         [HttpDelete("{id}")]
@@ -146,22 +150,22 @@ namespace Stadyum.API.Controllers
             if (team == null)
                 return NotFound();
 
-            // 🔐 Null kontrolü ile yalnızca dolu alanları güncelle
+            // 🔹 İsim güncellemesi (gönderildiyse)
             if (!string.IsNullOrWhiteSpace(dto.Name))
             {
                 team.Name = dto.Name;
             }
 
+            // 🔹 Kaptan güncellemesi (gönderildiyse)
             if (dto.CaptainId.HasValue)
             {
-                // Opsiyonel: Kaptan ID'si gerçekten geçerli bir oyuncuya ait mi kontrol edilebilir
                 var captainExists = await _context.Players.AnyAsync(p => p.Id == dto.CaptainId.Value);
                 if (!captainExists)
-                {
                     return BadRequest("Belirtilen kaptan bulunamadı.");
-                }
 
                 team.CaptainId = dto.CaptainId.Value;
+                Console.WriteLine($"Yeni isim: {team.Name}, Yeni kaptan ID: {team.CaptainId}");
+
             }
 
             try
@@ -178,6 +182,7 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
 
 
     }
