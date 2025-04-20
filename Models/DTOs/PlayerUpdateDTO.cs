@@ -8,7 +8,7 @@
         public string Position { get; set; } = string.Empty;
         public int SkillLevel { get; set; }
         public float Rating { get; set; }
-        public DateTime CreateAd { get; set; }
+        public DateTime CreateAd { get; set; } = DateTime.Now;
         public int? TeamId { get; set; }
     }
 }
