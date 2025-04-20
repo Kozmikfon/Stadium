@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Stadyum.API.Data;
 using Stadyum.API.Models.DTOs;
 using Stadyum.API.Models;
-using Stadyum.API.Models.DTOs;
+
 
 namespace Stadyum.API.Controllers
 {
