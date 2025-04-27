@@ -19,6 +19,7 @@ namespace Stadyum.API.Controllers
         }
 
         // GET: api/Matches
+        // GET: api/Matches
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatches()
         {
@@ -30,7 +31,9 @@ namespace Stadyum.API.Controllers
             var matchDTOs = matches.Select(m => new MatchDTO
             {
                 Id = m.Id,
+                Team1Id = m.Team1Id, // <<<<<<<<<< BURAYA EKLİYORUZ
                 Team1Name = m.Team1?.Name ?? "Bilinmiyor",
+                Team2Id = m.Team2Id, // <<<<<<<<<< BURAYA EKLİYORUZ
                 Team2Name = m.Team2?.Name ?? "Bilinmiyor",
                 FieldName = m.FieldName,
                 MatchDate = m.MatchDate
@@ -54,7 +57,9 @@ namespace Stadyum.API.Controllers
             var matchDTO = new MatchDTO
             {
                 Id = match.Id,
+                Team1Id = match.Team1Id, // <<<<<<<<<< BURAYA EKLİYORUZ
                 Team1Name = match.Team1?.Name ?? "Bilinmiyor",
+                Team2Id = match.Team2Id, // <<<<<<<<<< BURAYA EKLİYORUZ
                 Team2Name = match.Team2?.Name ?? "Bilinmiyor",
                 FieldName = match.FieldName,
                 MatchDate = match.MatchDate
@@ -62,6 +67,7 @@ namespace Stadyum.API.Controllers
 
             return Ok(matchDTO);
         }
+
 
         // POST: api/Matches
         [HttpPost]
