@@ -76,8 +76,21 @@ namespace Stadyum.API.Controllers
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, team);
+            var captain = await _context.Players.FindAsync(dto.CaptainId);
+            if (captain != null)
+            {
+                captain.TeamId = team.Id;
+                await _context.SaveChangesAsync();
+            }
+
+            // 📣 Captain'ın güncellenmiş halini dahil ederek Team'i tekrar çekelim:
+            var updatedTeam = await _context.Teams
+                .Include(t => t.Captain)
+                .FirstOrDefaultAsync(t => t.Id == team.Id);
+
+            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, updatedTeam);
         }
+
 
         // 🔹 Tekil takımı getir (DTO ile)
         [HttpGet("{id}")]
