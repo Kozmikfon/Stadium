@@ -84,7 +84,7 @@ namespace Stadyum.API.Controllers
                 Team1Id = dto.Team1Id,
                 Team2Id = dto.Team2Id,
                 FieldName = dto.FieldName,
-                MatchDate = dto.MatchDate
+                MatchDate = DateTime.SpecifyKind(dto.MatchDate, DateTimeKind.Unspecified) // 📣 BURAYA DİKKAT
             };
 
             _context.Matches.Add(match);
