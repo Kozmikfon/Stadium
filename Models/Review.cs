@@ -19,7 +19,6 @@ namespace Stadyum.API.Models
 
         [Range(1, 5)]
         public int Rating { get; set; }
-        public DateTime CreateDate { get; set; } = DateTime.UtcNow;
 
     }
 }

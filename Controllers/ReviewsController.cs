@@ -32,7 +32,7 @@ namespace Stadyum.API.Controllers
                 ReviewedTeamId = r.ReviewedTeamId,
                 Comment = r.Comment,
                 Rating = r.Rating,
-                CreateDate = r.CreateDate
+                
             }).ToList();
 
             return Ok(reviewDTOs);
@@ -56,7 +56,7 @@ namespace Stadyum.API.Controllers
                 ReviewedTeamId = review.ReviewedTeamId,
                 Comment = review.Comment,
                 Rating = review.Rating,
-                CreateDate = review.CreateDate
+                
             };
 
             return Ok(reviewDTO);
@@ -74,7 +74,7 @@ namespace Stadyum.API.Controllers
                 ReviewedTeamId = dto.ReviewedTeamId,
                 Comment = dto.Comment,
                 Rating = dto.Rating,
-                CreateDate = DateTime.UtcNow
+               
             };
 
             _context.Reviews.Add(review);
@@ -89,7 +89,7 @@ namespace Stadyum.API.Controllers
                 ReviewedTeamId = review.ReviewedTeamId,
                 Comment = review.Comment,
                 Rating = review.Rating,
-                CreateDate = review.CreateDate
+                
             };
 
             return CreatedAtAction(nameof(GetReview), new { id = review.Id }, reviewDTO);

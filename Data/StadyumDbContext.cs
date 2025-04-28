@@ -44,10 +44,10 @@ namespace Stadyum.API.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Match>()
-    .HasOne(m => m.Team1)
-    .WithMany()
-    .HasForeignKey(m => m.Team1Id)
-    .OnDelete(DeleteBehavior.Restrict);
+             .HasOne(m => m.Team1)
+                .WithMany()
+                 .HasForeignKey(m => m.Team1Id)
+                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Match>()
                 .HasOne(m => m.Team2)

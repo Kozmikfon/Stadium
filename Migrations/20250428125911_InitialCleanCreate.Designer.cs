@@ -12,8 +12,8 @@ using Stadyum.API.Data;
 namespace Stadyum.API.Migrations
 {
     [DbContext(typeof(StadyumDbContext))]
-    [Migration("20250404211030_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250428125911_InitialCleanCreate")]
+    partial class InitialCleanCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,7 @@ namespace Stadyum.API.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("MatchDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Team1Id")
                         .HasColumnType("integer");
@@ -47,6 +47,10 @@ namespace Stadyum.API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Team1Id");
+
+                    b.HasIndex("Team2Id");
 
                     b.ToTable("Matches", (string)null);
                 });
@@ -132,7 +136,8 @@ namespace Stadyum.API.Migrations
 
                     b.Property<string>("Comment")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("MatchId")
                         .HasColumnType("integer");
@@ -162,7 +167,7 @@ namespace Stadyum.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CaptainId")
+                    b.Property<int?>("CaptainId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -235,6 +240,25 @@ namespace Stadyum.API.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("Stadyum.API.Models.Match", b =>
+                {
+                    b.HasOne("Stadyum.API.Models.Team", "Team1")
+                        .WithMany()
+                        .HasForeignKey("Team1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Stadyum.API.Models.Team", "Team2")
+                        .WithMany()
+                        .HasForeignKey("Team2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Team1");
+
+                    b.Navigation("Team2");
+                });
+
             modelBuilder.Entity("Stadyum.API.Models.Player", b =>
                 {
                     b.HasOne("Stadyum.API.Models.Team", "Team")
@@ -250,8 +274,7 @@ namespace Stadyum.API.Migrations
                     b.HasOne("Stadyum.API.Models.Player", "Captain")
                         .WithMany()
                         .HasForeignKey("CaptainId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Captain");
                 });

@@ -7,27 +7,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Stadyum.API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCleanCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Matches",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Team1Id = table.Column<int>(type: "integer", nullable: false),
-                    FieldName = table.Column<string>(type: "text", nullable: false),
-                    MatchDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Team2Id = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Matches", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Offers",
                 columns: table => new
@@ -54,7 +38,7 @@ namespace Stadyum.API.Migrations
                     ReviewerId = table.Column<int>(type: "integer", nullable: false),
                     ReviewedUserId = table.Column<int>(type: "integer", nullable: true),
                     ReviewedTeamId = table.Column<int>(type: "integer", nullable: true),
-                    Comment = table.Column<string>(type: "text", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Rating = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -96,6 +80,22 @@ namespace Stadyum.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Matches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Team1Id = table.Column<int>(type: "integer", nullable: false),
+                    Team2Id = table.Column<int>(type: "integer", nullable: false),
+                    FieldName = table.Column<string>(type: "text", nullable: false),
+                    MatchDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Matches", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Players",
                 columns: table => new
                 {
@@ -122,7 +122,7 @@ namespace Stadyum.API.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    CaptainId = table.Column<int>(type: "integer", nullable: false)
+                    CaptainId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -136,6 +136,16 @@ namespace Stadyum.API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Matches_Team1Id",
+                table: "Matches",
+                column: "Team1Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Matches_Team2Id",
+                table: "Matches",
+                column: "Team2Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Players_TeamId",
                 table: "Players",
                 column: "TeamId");
@@ -144,6 +154,22 @@ namespace Stadyum.API.Migrations
                 name: "IX_Teams_CaptainId",
                 table: "Teams",
                 column: "CaptainId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Matches_Teams_Team1Id",
+                table: "Matches",
+                column: "Team1Id",
+                principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Matches_Teams_Team2Id",
+                table: "Matches",
+                column: "Team2Id",
+                principalTable: "Teams",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Players_Teams_TeamId",
