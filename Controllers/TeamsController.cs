@@ -80,6 +80,7 @@ namespace Stadyum.API.Controllers
             if (captain != null)
             {
                 captain.TeamId = team.Id;
+                _context.Players.Update(captain);
                 await _context.SaveChangesAsync();
             }
 

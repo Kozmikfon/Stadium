@@ -98,6 +98,8 @@ namespace Stadyum.API.Controllers
             player.CreateAd = dto.CreateAd;
             player.TeamId = dto.TeamId;
 
+            _context.Entry(player).State = EntityState.Modified; // 📣 📣 📣 BUNU EKLE!
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -112,6 +114,7 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
 
 
         // 🔹 Yeni oyuncu oluştur
