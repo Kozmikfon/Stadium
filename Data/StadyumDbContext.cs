@@ -55,6 +55,36 @@ namespace Stadyum.API.Data
                 .HasForeignKey(m => m.Team2Id)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<TeamMember>()
+             .HasOne(tm => tm.Player)
+                .WithMany()
+                .HasForeignKey(tm => tm.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TeamMember>()
+                .HasOne(tm => tm.Team)
+                .WithMany()
+                .HasForeignKey(tm => tm.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Offer>()
+             .HasOne(o => o.Sender)
+            .WithMany()
+            .HasForeignKey(o => o.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Offer>()
+                .HasOne(o => o.Receiver)
+                .WithMany()
+                .HasForeignKey(o => o.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Offer>()
+                .HasOne(o => o.Match)
+                .WithMany()
+                .HasForeignKey(o => o.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
 
     }

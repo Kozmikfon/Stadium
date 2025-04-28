@@ -1,0 +1,120 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Stadyum.API.Data;
+using Stadyum.API.Models;
+using Stadyum.API.Models.DTOs;
+
+namespace Stadyum.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OffersController : ControllerBase
+    {
+        private readonly StadyumDbContext _context;
+
+        public OffersController(StadyumDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/Offers
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<OfferDTO>>> GetOffers()
+        {
+            var offers = await _context.Offers.ToListAsync();
+
+            var offerDTOs = offers.Select(o => new OfferDTO
+            {
+                Id = o.Id,
+                SenderId = o.SenderId,
+                ReceiverId = o.ReceiverId,
+                MatchId = o.MatchId,
+                Status = o.Status
+            }).ToList();
+
+            return Ok(offerDTOs);
+        }
+
+        // GET: api/Offers/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<OfferDTO>> GetOffer(int id)
+        {
+            var offer = await _context.Offers.FindAsync(id);
+
+            if (offer == null)
+                return NotFound();
+
+            var offerDTO = new OfferDTO
+            {
+                Id = offer.Id,
+                SenderId = offer.SenderId,
+                ReceiverId = offer.ReceiverId,
+                MatchId = offer.MatchId,
+                Status = offer.Status
+            };
+
+            return Ok(offerDTO);
+        }
+
+        // POST: api/Offers
+        [HttpPost]
+        public async Task<ActionResult<OfferDTO>> CreateOffer(OfferCreateDTO dto)
+        {
+            var offer = new Offer
+            {
+                SenderId = dto.SenderId,
+                ReceiverId = dto.ReceiverId,
+                MatchId = dto.MatchId,
+                Status = dto.Status
+            };
+
+            _context.Offers.Add(offer);
+            await _context.SaveChangesAsync();
+
+            var result = new OfferDTO
+            {
+                Id = offer.Id,
+                SenderId = offer.SenderId,
+                ReceiverId = offer.ReceiverId,
+                MatchId = offer.MatchId,
+                Status = offer.Status
+            };
+
+            return CreatedAtAction(nameof(GetOffer), new { id = offer.Id }, result);
+        }
+
+        // PUT: api/Offers/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateOffer(int id, OfferCreateDTO dto)
+        {
+            var offer = await _context.Offers.FindAsync(id);
+
+            if (offer == null)
+                return NotFound();
+
+            offer.SenderId = dto.SenderId;
+            offer.ReceiverId = dto.ReceiverId;
+            offer.MatchId = dto.MatchId;
+            offer.Status = dto.Status;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/Offers/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOffer(int id)
+        {
+            var offer = await _context.Offers.FindAsync(id);
+
+            if (offer == null)
+                return NotFound();
+
+            _context.Offers.Remove(offer);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+    }
+}
