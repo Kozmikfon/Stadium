@@ -19,8 +19,8 @@ namespace Stadyum.API.Controllers
         {
             _context = context;
         }
-        [HttpGet]
-        
+
+        [HttpGet]        
         public IActionResult GetUsers()
         {
             var users = _context.Users
@@ -75,11 +75,21 @@ namespace Stadyum.API.Controllers
                 UserId = userId,
                 Email = email,
                 Role = role
-            });
-
-            
+            });    
 
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
 
         [HttpGet("admin")]
         [Authorize(Roles = "Admin")]

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Authorization;
 using LoginRequest = Stadyum.API.Models.LoginRequest;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -26,8 +27,32 @@ namespace Stadyum.API.Controllers
             _jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
             _context = context;
         }
+
+
+        //register
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] User user)
+        {
+            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.PasswordHash))
+            {
+                return BadRequest("Email ve şifre zorunludur.");
+            }
+
+            // Email benzersiz mi kontrol et
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Bu email zaten kullanılıyor.");
+            }
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Kullanıcı başarıyla kaydedildi." });
+        }
+
+
         [HttpPost("login")]
-        
         public IActionResult Login([FromBody] LoginRequest request)
         {
             Console.WriteLine($"Gelen Email: {request.Email}");
@@ -43,9 +68,12 @@ namespace Stadyum.API.Controllers
             {
                 return Unauthorized("Kullanıcı adı veya şifre hatalı");
             }
+
             var token = GenerateJwtToken(user);
-            return Ok(new { Token = token });
+
+            return Ok(new { token = token, role = "User" }); // Küçük harf dikkat!
         }
+
         private string GenerateJwtToken(User user)
         {
             var claims = new[]

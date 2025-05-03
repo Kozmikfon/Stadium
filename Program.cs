@@ -103,11 +103,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication(); // JWT doðrulama
 app.UseAuthorization(); // Yetkilendirme
 app.UseCors("AllowAll");
+app.UseRouting();
+
 //  Endpoint Tanýmlamalarý
 app.MapControllers();
 
