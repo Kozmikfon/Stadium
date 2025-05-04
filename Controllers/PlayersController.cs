@@ -130,13 +130,43 @@ namespace Stadyum.API.Controllers
                 SkillLevel = dto.SkillLevel,
                 Rating = dto.Rating,
                 CreateAd = dto.CreateAd,
-                TeamId = dto.TeamId
+                TeamId = dto.TeamId,
+                UserId = dto.UserId
             };
 
             _context.Players.Add(player);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetPlayer), new { id = player.Id }, player);
+        }
+
+        // GET: api/Players/byUser/{userId}
+        [HttpGet("byUser/{userId}")]
+        public async Task<ActionResult<PlayerDTO>> GetPlayerByUserId(int userId)
+        {
+            var player = await _context.Players
+                            .Include(p => p.Team)
+                            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (player == null)
+                return NotFound("Bu kullanıcıya ait oyuncu bulunamadı.");
+
+            // PlayerDTO dönüşümü burada yapılıyor olmalı
+            var playerDTO = new PlayerDTO
+            {
+                Id = player.Id,
+                FirstName = player.FirstName,
+                LastName = player.LastName,
+                Email = player.Email,
+                Position = player.Position,
+                SkillLevel = player.SkillLevel,
+                Rating = player.Rating,
+                CreateAd = player.CreateAd,
+                TeamId = player.TeamId,
+                TeamName = player.Team != null ? player.Team.Name : null
+            };
+
+            return Ok(playerDTO);
         }
 
 

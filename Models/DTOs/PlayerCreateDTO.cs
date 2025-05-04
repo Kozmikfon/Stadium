@@ -10,5 +10,6 @@
         public float Rating { get; set; }
         public DateTime CreateAd { get; set; }
         public int? TeamId { get; set; } // Opsiyonel, takım olmayabilir
+        public int UserId { get; set; }
     }
 }

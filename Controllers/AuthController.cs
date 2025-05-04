@@ -68,21 +68,29 @@ namespace Stadyum.API.Controllers
             {
                 return Unauthorized("Kullanıcı adı veya şifre hatalı");
             }
+            // Kullanıcının Player kaydı var mı kontrol et
+            var player = _context.Players.FirstOrDefault(p => p.UserId == user.Id);
 
-            var token = GenerateJwtToken(user);
+            string role = player != null ? "Player" : "User";
+            var token = GenerateJwtToken(user, player?.Id);
 
-            return Ok(new { token = token, role = "User" }); // Küçük harf dikkat!
+            return Ok(new { Token = token, Role = role }); // Küçük harf dikkat!
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, int? playerId)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim("userId",user.Id.ToString()),
                 new Claim("role","User")
             };
+
+            if (playerId.HasValue)
+            {
+                claims.Add(new Claim("playerId", playerId.Value.ToString()));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
