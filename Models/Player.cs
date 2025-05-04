@@ -36,5 +36,6 @@ namespace Stadyum.API.Models
 
         [ForeignKey("TeamId")]
         public Team? Team { get; set; }
+        public int UserId { get; internal set; }
     }
 }
