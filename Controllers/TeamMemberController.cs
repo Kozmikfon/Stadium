@@ -56,11 +56,28 @@ namespace Stadyum.API.Controllers
         [HttpPost]
         public async Task<ActionResult<TeamMemberDTO>> CreateTeamMember(TeamMemberCreateDTO dto)
         {
+            // ✅ Önce zaten kayıtlı mı kontrol et
+            bool alreadyExists = await _context.TeamMembers
+                .AnyAsync(t => t.TeamId == dto.TeamId && t.PlayerId == dto.PlayerId);
+
+            if (alreadyExists)
+            {
+                return BadRequest("Oyuncu zaten bu takıma kayıtlı.");
+            }
             var teamMember = new TeamMember
             {
                 TeamId = dto.TeamId,
                 PlayerId = dto.PlayerId
             };
+
+            var player = await _context.Players.FindAsync(dto.PlayerId);
+            if (player != null)
+            {
+                player.TeamId = dto.TeamId;
+                // update player
+                _context.Players.Update(player);
+            }
+
 
             _context.TeamMembers.Add(teamMember);
             await _context.SaveChangesAsync();

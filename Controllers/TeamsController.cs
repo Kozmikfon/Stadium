@@ -24,6 +24,7 @@ namespace Stadyum.API.Controllers
             var teams = await _context.Teams
                 .Include(t => t.Players)
                 .Include(t => t.Captain)
+                    
                 .Select(t => new TeamDTO
                 {
                     Id = t.Id,

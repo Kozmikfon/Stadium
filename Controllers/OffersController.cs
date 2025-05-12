@@ -34,6 +34,26 @@ namespace Stadyum.API.Controllers
 
             return Ok(offerDTOs);
         }
+        // ekleme
+        // GET: api/Offers/byPlayer/{playerId}
+        [HttpGet("byPlayer/{playerId}")]
+        public async Task<ActionResult<IEnumerable<OfferDTO>>> GetOffersByPlayer(int playerId)
+        {
+            var offers = await _context.Offers
+                .Where(o => o.ReceiverId == playerId)
+                .ToListAsync();
+
+            var offerDTOs = offers.Select(o => new OfferDTO
+            {
+                Id = o.Id,
+                SenderId = o.SenderId,
+                ReceiverId = o.ReceiverId,
+                MatchId = o.MatchId,
+                Status = o.Status
+            }).ToList();
+
+            return Ok(offerDTOs);
+        }
 
         // GET: api/Offers/5
         [HttpGet("{id}")]
@@ -68,6 +88,7 @@ namespace Stadyum.API.Controllers
                 Status = dto.Status
             };
 
+
             _context.Offers.Add(offer);
             await _context.SaveChangesAsync();
 
@@ -101,6 +122,22 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+        //ekleme update
+        // PUT: api/Offers/update-status/{id}
+        [HttpPut("update-status/{id}")]
+        public async Task<IActionResult> UpdateOfferStatus(int id, [FromBody] string status)
+        {
+            var offer = await _context.Offers.FindAsync(id);
+            if (offer == null)
+                return NotFound();
+
+            offer.Status = status;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
 
         // DELETE: api/Offers/5
         [HttpDelete("{id}")]
