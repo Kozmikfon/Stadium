@@ -162,6 +162,29 @@ namespace Stadyum.API.Controllers
             }
         }
 
+        //matchıd
+        [HttpGet("accepted-by-match/{matchId}")]
+        public async Task<ActionResult<IEnumerable<OfferDTO>>> GetAcceptedOffersByMatch(int matchId)
+        {
+            var offers = await _context.Offers
+                .Where(o => o.MatchId == matchId && o.Status == "Accepted")
+                .ToListAsync();
+
+            var offerDTOs = offers.Select(o => new OfferDTO
+            {
+                Id = o.Id,
+                SenderId = o.SenderId,
+                ReceiverId = o.ReceiverId,
+                MatchId = o.MatchId,
+                Status = o.Status,
+                ReceiverName = _context.Players
+                    .Where(p => p.Id == o.ReceiverId)
+                    .Select(p => p.FirstName + " " + p.LastName)
+                    .FirstOrDefault()
+            }).ToList();
+
+            return Ok(offerDTOs);
+        }
 
 
 

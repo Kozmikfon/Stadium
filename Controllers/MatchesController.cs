@@ -62,7 +62,11 @@ namespace Stadyum.API.Controllers
                 Team2Id = match.Team2Id, // <<<<<<<<<< BURAYA EKLİYORUZ
                 Team2Name = match.Team2?.Name ?? "Bilinmiyor",
                 FieldName = match.FieldName,
-                MatchDate = match.MatchDate
+                MatchDate = match.MatchDate,
+
+                // ✅ Eklenen yer
+                Team1CaptainId = match.Team1?.CaptainId ?? 0,
+                Team2CaptainId = match.Team2?.CaptainId ?? 0
             };
 
             return Ok(matchDTO);

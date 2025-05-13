@@ -12,5 +12,8 @@ namespace Stadyum.API.Models.DTOs
 
         public string FieldName { get; set; } = string.Empty;
         public DateTime MatchDate { get; set; }
+       
+        public int Team1CaptainId { get; set; }
+        public int Team2CaptainId { get; set; }
     }
 }
