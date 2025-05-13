@@ -18,6 +18,6 @@ namespace Stadyum.API.Models
         public int MatchId { get; set; }
         public Match? Match { get; set; }
 
-        public string Status { get; set; } = "Beklemede"; // Varsayılan
+        public string Status { get; set; } = "Pending"; // Varsayılan
     }
 }

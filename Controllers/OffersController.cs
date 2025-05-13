@@ -123,19 +123,48 @@ namespace Stadyum.API.Controllers
             return NoContent();
         }
         //ekleme update
-        // PUT: api/Offers/update-status/{id}
         [HttpPut("update-status/{id}")]
-        public async Task<IActionResult> UpdateOfferStatus(int id, [FromBody] string status)
+        public async Task<IActionResult> UpdateOfferStatus(int id, [FromBody] OfferStatusUpdateDTO dto)
         {
-            var offer = await _context.Offers.FindAsync(id);
-            if (offer == null)
-                return NotFound();
+            try
+            {
+                Console.WriteLine($"🟢 Status güncelleme isteği: ID={id}, YeniStatus={dto.Status}");
 
-            offer.Status = status;
-            await _context.SaveChangesAsync();
+                var validStatuses = new[] { "Pending", "Accepted", "Rejected" };
+                if (!validStatuses.Contains(dto.Status))
+                    return BadRequest("Invalid status.");
 
-            return NoContent();
+                var offer = await _context.Offers.FindAsync(id);
+                if (offer == null)
+                    return NotFound();
+
+                offer.Status = dto.Status;
+                _context.Entry(offer).Property(o => o.Status).IsModified = true;
+
+                Console.WriteLine($"⏳ SaveChanges'e geçiliyor...");
+
+                var result = await _context.SaveChangesAsync();
+                Console.WriteLine($"✅ Kaydedildi. Etkilenen satır sayısı: {result}");
+
+                return Ok(new OfferDTO
+                {
+                    Id = offer.Id,
+                    SenderId = offer.SenderId,
+                    ReceiverId = offer.ReceiverId,
+                    MatchId = offer.MatchId,
+                    Status = offer.Status
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ SaveChanges hatası: {ex.Message}");
+                return StatusCode(500, "Bir hata oluştu: " + ex.Message);
+            }
         }
+
+
+
+
 
 
 
