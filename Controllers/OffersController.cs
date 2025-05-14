@@ -188,6 +188,17 @@ namespace Stadyum.API.Controllers
 
 
 
+        // maça teklif
+        [HttpGet("count-accepted/{matchId}")]
+        public async Task<IActionResult> GetAcceptedCount(int matchId)
+        {
+            var count = await _context.Offers
+                .Where(o => o.MatchId == matchId && o.Status == "Accepted")
+                .CountAsync();
+
+            return Ok(count);
+        }
+
 
 
 

@@ -187,9 +187,6 @@ namespace Stadyum.API.Controllers
                 _context.Players.Update(captain);
             }
 
-
-
-
             try
             {
                 await _context.SaveChangesAsync();

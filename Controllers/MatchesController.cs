@@ -72,6 +72,28 @@ namespace Stadyum.API.Controllers
             return Ok(matchDTO);
         }
 
+        // maçtaki oyunuc sayisi
+        // GET: api/Matches/with-accepted-count
+        [HttpGet("with-accepted-count")]
+        public async Task<IActionResult> GetMatchesWithAcceptedCount()
+        {
+            var matches = await _context.Matches
+                .Include(m => m.Team1)
+                .Include(m => m.Team2)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.FieldName,
+                    m.MatchDate,
+                    Team1Name = m.Team1 != null ? m.Team1.Name : "Bilinmiyor",
+                    Team2Name = m.Team2 != null ? m.Team2.Name : "Bilinmiyor",
+                    AcceptedCount = _context.Offers.Count(o => o.MatchId == m.Id && o.Status == "Accepted")
+                })
+                .ToListAsync();
+
+            return Ok(matches);
+        }
+
 
         // POST: api/Matches
         [HttpPost]
