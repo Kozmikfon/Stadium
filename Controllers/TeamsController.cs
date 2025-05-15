@@ -174,6 +174,41 @@ namespace Stadyum.API.Controllers
             });
         }
 
+
+        //takım karsilastirma
+        [HttpGet("compare/{team1Id}/{team2Id}")]
+        public async Task<IActionResult> CompareTeams(int team1Id, int team2Id)
+        {
+            var team1 = await _context.Teams.FindAsync(team1Id);
+            var team2 = await _context.Teams.FindAsync(team2Id);
+
+            if (team1 == null || team2 == null)
+                return NotFound("Takımlardan biri bulunamadı.");
+
+            var result = new List<TeamCompareDTO>();
+
+            foreach (var team in new[] { team1, team2 })
+            {
+                int totalMatches = await _context.Matches
+                    .CountAsync(m => m.Team1Id == team.Id || m.Team2Id == team.Id);
+
+                double avgRating = await _context.Players
+                    .Where(p => p.TeamId == team.Id && p.Rating > 0)
+                    .AverageAsync(p => (double?)p.Rating) ?? 0;
+
+                result.Add(new TeamCompareDTO
+                {
+                    TeamName = team.Name,
+                    TotalMatches = totalMatches,
+                    AverageRating = Math.Round(avgRating, 1)
+                });
+            }
+
+            return Ok(result);
+        }
+
+
+
         // takım detayı
         [HttpGet("details/{teamId}")]
         public async Task<IActionResult> GetTeamDetails(int teamId)

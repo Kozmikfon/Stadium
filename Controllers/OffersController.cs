@@ -37,23 +37,31 @@ namespace Stadyum.API.Controllers
         // ekleme
         // GET: api/Offers/byPlayer/{playerId}
         [HttpGet("byPlayer/{playerId}")]
-        public async Task<ActionResult<IEnumerable<OfferDTO>>> GetOffersByPlayer(int playerId)
+        public async Task<IActionResult> GetOffersByPlayer(int playerId)
         {
             var offers = await _context.Offers
+                .Include(o => o.Match)
+                    .ThenInclude(m => m.Team1) // kaptan Team1'de olabilir
+                .Include(o => o.Match.Team1.Captain) // kaptan bilgisi için
                 .Where(o => o.ReceiverId == playerId)
+                .Select(o => new OfferDTO
+                {
+                    Id = o.Id,
+                    SenderId = o.SenderId,
+                    ReceiverId = o.ReceiverId,
+                    MatchId = o.MatchId,
+                    Status = o.Status,
+
+                    // 👇 Eklenen alanlar
+                    FieldName = o.Match.FieldName,
+                    MatchDate = o.Match.MatchDate,
+                    CaptainName = o.Match.Team1.Captain.FirstName + " " + o.Match.Team1.Captain.LastName
+                })
                 .ToListAsync();
 
-            var offerDTOs = offers.Select(o => new OfferDTO
-            {
-                Id = o.Id,
-                SenderId = o.SenderId,
-                ReceiverId = o.ReceiverId,
-                MatchId = o.MatchId,
-                Status = o.Status
-            }).ToList();
-
-            return Ok(offerDTOs);
+            return Ok(offers);
         }
+
 
         // GET: api/Offers/5
         [HttpGet("{id}")]
@@ -249,5 +257,38 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("accepted/{playerId}")]
+        public async Task<IActionResult> GetAcceptedOffers(int playerId)
+        {
+            var offers = await _context.Offers
+                .Where(o => o.ReceiverId == playerId && o.Status == "Kabul Edildi")
+                .Include(o => o.Match)
+                .ToListAsync();
+
+            return Ok(offers.Select(o => new {
+                o.Id,
+                o.MatchId,
+                FieldName = o.Match.FieldName,
+                MatchDate = o.Match.MatchDate
+            }));
+        }
+
+        [HttpGet("rejected/{playerId}")]
+        public async Task<IActionResult> GetRejectedOffers(int playerId)
+        {
+            var offers = await _context.Offers
+                .Where(o => o.ReceiverId == playerId && o.Status == "Reddedildi")
+                .Include(o => o.Match)
+                .ToListAsync();
+
+            return Ok(offers.Select(o => new {
+                o.Id,
+                o.MatchId,
+                FieldName = o.Match.FieldName,
+                MatchDate = o.Match.MatchDate
+            }));
+        }
+
     }
 }

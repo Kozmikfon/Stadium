@@ -10,5 +10,9 @@
 
         // name
         public string? ReceiverName { get; set; }
+        // 👇 Eklenecek bilgiler
+        public string? FieldName { get; set; }
+        public string? CaptainName { get; set; }
+        public DateTime MatchDate { get; set; }
     }
 }
