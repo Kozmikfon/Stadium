@@ -200,6 +200,39 @@ namespace Stadyum.API.Controllers
         }
 
 
+        [HttpDelete("{offerId}")]
+        public async Task<IActionResult> RemoveOffer(int offerId)
+        {
+            var offer = await _context.Offers.FindAsync(offerId);
+            if (offer == null)
+                return NotFound();
+
+            var match = await _context.Matches.FindAsync(offer.MatchId);
+            if (match == null)
+                return NotFound();
+
+            var team = await _context.Teams.FindAsync(match.Team1Id); // 👈 sadece Team1 kaptanı yetkili
+
+            if (team == null)
+                return NotFound();
+
+            // 🔐 JWT'den giriş yapan kişi kim?
+            var playerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "playerId")?.Value;
+            if (playerIdClaim == null)
+                return Unauthorized();
+
+            var currentPlayerId = int.Parse(playerIdClaim);
+
+            // ❌ Eğer kaptan değilse → yetki yok
+            if (currentPlayerId != team.CaptainId)
+                return Forbid("Bu işlemi sadece kaptan yapabilir.");
+
+            _context.Offers.Remove(offer);
+            await _context.SaveChangesAsync();
+
+            return Ok("Oyuncu başarıyla maçtan çıkarıldı.");
+        }
+
 
 
         // DELETE: api/Offers/5

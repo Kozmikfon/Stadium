@@ -143,6 +143,69 @@ namespace Stadyum.API.Controllers
         }
 
 
+        //takım ozelligi
+        [HttpGet("profile/{playerId}")]
+        public async Task<IActionResult> GetTeamProfile(int playerId)
+        {
+            var player = await _context.Players
+                .Include(p => p.Team)
+                .ThenInclude(t => t.Captain)
+                .FirstOrDefaultAsync(p => p.Id == playerId);
+
+            if (player?.Team == null)
+                return NotFound("Oyuncu herhangi bir takıma ait değil.");
+
+            var team = player.Team;
+
+            int totalMatches = await _context.Matches
+                .CountAsync(m => m.Team1Id == team.Id || m.Team2Id == team.Id);
+
+            int memberCount = await _context.TeamMembers
+                .CountAsync(m => m.TeamId == team.Id);
+
+            return Ok(new
+            {
+                team.Id,
+                team.Name,
+                CaptainId = team.CaptainId,
+                CaptainName = team.Captain.FirstName + " " + team.Captain.LastName,
+                MemberCount = memberCount,
+                TotalMatches = totalMatches
+            });
+        }
+
+        // takım detayı
+        [HttpGet("details/{teamId}")]
+        public async Task<IActionResult> GetTeamDetails(int teamId)
+        {
+            var team = await _context.Teams
+                .Include(t => t.Captain)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+
+            if (team == null)
+                return NotFound("Takım bulunamadı.");
+
+            int memberCount = await _context.TeamMembers
+                .CountAsync(m => m.TeamId == team.Id);
+
+            int matchCount = await _context.Matches
+                .CountAsync(m => m.Team1Id == team.Id || m.Team2Id == team.Id);
+
+            return Ok(new
+            {
+                team.Name,
+                CaptainName = team.Captain.FirstName + " " + team.Captain.LastName,
+                MemberCount = memberCount,
+                TotalMatches = matchCount
+            });
+        }
+        // kaptanı degistir
+
+     
+
+
+
+
         // 🔹 Takımı sil
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeam(int id)
@@ -181,7 +244,9 @@ namespace Stadyum.API.Controllers
                 team.CaptainId = dto.CaptainId.Value;
 
                 // 🧠 Burada kaptanı takıma bağlayalım:
-                captain.TeamId = team.Id;
+                if (captain.TeamId != team.Id)
+                    return BadRequest("Kaptan, bu takıma ait değil.");
+
 
                 // Bu satırı ekleyerek EF'nin değişikliği izlemesini sağlıyoruz:
                 _context.Players.Update(captain);

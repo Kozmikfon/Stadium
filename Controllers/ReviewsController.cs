@@ -95,6 +95,53 @@ namespace Stadyum.API.Controllers
             return CreatedAtAction(nameof(GetReview), new { id = review.Id }, reviewDTO);
         }
 
+        // tüm yorumları getir
+        [HttpGet("byUser/{playerId}")]
+        public async Task<IActionResult> GetReviewsByPlayer(int playerId)
+        {
+            var comments = await _context.Reviews
+                .Where(r => r.ReviewedUserId == playerId)
+                .Include(r => r.Match)
+                .ToListAsync();
+
+            return Ok(comments.Select(r => new {
+                r.Id,
+                r.MatchId,
+                r.Comment,
+                r.Rating,
+                MatchDate = r.Match.MatchDate,
+                MatchField = r.Match.FieldName
+            }));
+        }
+
+        //oyuncuya özel yorum
+        [HttpGet("mentions/{playerName}")]
+        public async Task<IActionResult> GetMentions(string playerName)
+        {
+            if (string.IsNullOrWhiteSpace(playerName))
+                return BadRequest("Geçerli bir oyuncu adı girilmelidir.");
+
+            string mentionTag = "@" + playerName.ToLower();
+
+            var mentions = await _context.Reviews
+                .Where(r => r.Comment.ToLower().Contains(mentionTag))
+                .Include(r => r.Match)
+                .ToListAsync();
+
+            var results = mentions.Select(r => new
+            {
+                r.MatchId,
+                r.Comment,
+                r.Rating,
+                MatchDate = r.Match.MatchDate,
+                FieldName = r.Match.FieldName
+            });
+
+            return Ok(results);
+        }
+
+
+
         // DELETE: api/Reviews/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReview(int id)

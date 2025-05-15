@@ -92,6 +92,26 @@ namespace Stadyum.API.Controllers
             return CreatedAtAction(nameof(GetTeamMember), new { id = teamMember.Id }, result);
         }
 
+        //takımdan ayrıl
+        [HttpDelete("leave/{playerId}")]
+        public async Task<IActionResult> LeaveTeam(int playerId)
+        {
+            var membership = await _context.TeamMembers.FirstOrDefaultAsync(m => m.PlayerId == playerId);
+            if (membership == null)
+                return NotFound("Üyelik bulunamadı.");
+
+            _context.TeamMembers.Remove(membership);
+
+            var player = await _context.Players.FindAsync(playerId);
+            if (player != null)
+                player.TeamId = null;
+
+            await _context.SaveChangesAsync();
+            return Ok("Takımdan ayrılındı.");
+        }
+
+
+
         // DELETE: api/TeamMembers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeamMember(int id)

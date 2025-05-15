@@ -82,23 +82,14 @@ namespace Stadyum.API.Controllers
         public async Task<IActionResult> PutPlayer(int id, PlayerUpdateDTO dto)
         {
             var player = await _context.Players.FindAsync(id);
-
             if (player == null)
-            {
                 return NotFound();
-            }
 
-            // Güncelleme
-            player.FirstName = dto.FirstName;
-            player.LastName = dto.LastName;
+            // Sadece gerekli alanlar güncelleniyor
             player.Email = dto.Email;
             player.Position = dto.Position;
-            player.SkillLevel = dto.SkillLevel;
-            player.Rating = dto.Rating;
-            player.CreateAd = dto.CreateAd;
-            player.TeamId = dto.TeamId;
 
-            _context.Entry(player).State = EntityState.Modified; // 📣 📣 📣 BUNU EKLE!
+            _context.Entry(player).State = EntityState.Modified;
 
             try
             {
@@ -114,6 +105,44 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
+        // istatistik
+        [HttpGet("stats/{playerId}")]
+        public async Task<IActionResult> GetPlayerStats(int playerId)
+        {
+            var player = await _context.Players.FindAsync(playerId);
+            if (player == null)
+                return NotFound();
+
+            // Oyuncunun takımına ait maç sayısı
+            int totalMatches = await _context.Matches
+                .CountAsync(m => m.Team1Id == player.TeamId || m.Team2Id == player.TeamId);
+
+            // Bu oyuncuya gönderilen toplam teklif sayısı
+            int totalOffers = await _context.Offers
+                .CountAsync(o => o.ReceiverId == player.Id);
+
+            // Takıma katılalı kaç gün olmuş
+            int membershipDays = (int)(DateTime.Now - player.CreateAd).TotalDays;
+
+            // Bu oyuncuya yapılan değerlendirmelerin ortalama puanı
+            double avgRating = await _context.Reviews
+                .Where(r => r.ReviewedUserId == player.Id && r.Rating > 0)
+                .AverageAsync(r => (double?)r.Rating) ?? 0;
+
+            // JSON olarak döndür
+            return Ok(new
+            {
+                totalMatches,
+                totalOffers,
+                averageRating = Math.Round(avgRating, 1),
+                membershipDays
+            });
+        }
+
+       
+
+
 
 
 
