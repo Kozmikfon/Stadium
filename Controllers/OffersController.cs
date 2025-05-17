@@ -21,7 +21,11 @@ namespace Stadyum.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OfferDTO>>> GetOffers()
         {
-            var offers = await _context.Offers.ToListAsync();
+            var offers = await _context.Offers
+                .Include(o => o.Sender)
+                .Include(o => o.Receiver)
+                .Include(o => o.Match)
+                .ToListAsync();
 
             var offerDTOs = offers.Select(o => new OfferDTO
             {
@@ -29,11 +33,19 @@ namespace Stadyum.API.Controllers
                 SenderId = o.SenderId,
                 ReceiverId = o.ReceiverId,
                 MatchId = o.MatchId,
-                Status = o.Status
+                Status = o.Status,
+
+                // Ekstra veri:
+                ReceiverName = o.Receiver != null ? $"{o.Receiver.FirstName} {o.Receiver.LastName}" : null,
+                //SenderName = o.Sender != null ? $"{o.Sender.FirstName} {o.Sender.LastName}" : null,
+                MatchDate = o.Match?.MatchDate ?? DateTime.MinValue,
+                FieldName = o.Match?.FieldName,
+                CaptainName = o.Match?.Team1?.Captain?.FirstName // varsa böyle detay istenebilir
             }).ToList();
 
             return Ok(offerDTOs);
         }
+
         // ekleme
         // GET: api/Offers/byPlayer/{playerId}
         [HttpGet("byPlayer/{playerId}")]
@@ -62,6 +74,32 @@ namespace Stadyum.API.Controllers
             return Ok(offers);
         }
 
+        [HttpGet("byCaptain/{playerId}")]
+        public async Task<IActionResult> GetOffersByCaptain(int playerId)
+        {
+            var team = await _context.Teams
+                .FirstOrDefaultAsync(t => t.CaptainId == playerId);
+
+            if (team == null)
+                return NotFound("Kaptan takımı bulunamadı.");
+
+            // O takımın oynayacağı tüm maçlar
+            var matchIds = await _context.Matches
+                .Where(m => m.Team1Id == team.Id || m.Team2Id == team.Id)
+                .Select(m => m.Id)
+                .ToListAsync();
+
+            var offers = await _context.Offers
+                .Include(o => o.Sender)
+                .Include(o => o.Match)
+                .Where(o => matchIds.Contains(o.MatchId))
+                .ToListAsync();
+
+            return Ok(offers);
+        }
+
+
+
 
         // GET: api/Offers/5
         [HttpGet("{id}")]
@@ -88,14 +126,20 @@ namespace Stadyum.API.Controllers
         [HttpPost]
         public async Task<ActionResult<OfferDTO>> CreateOffer(OfferCreateDTO dto)
         {
+            if (dto.SenderId <= 0 || dto.MatchId <= 0)
+                return BadRequest("SenderId ve MatchId zorunludur.");
+
+            // ReceiverId boş olabilir ama maç için teklifse null gelmemeli
+            if (dto.ReceiverId == null)
+                return BadRequest("ReceiverId boş olamaz.");
+
             var offer = new Offer
             {
                 SenderId = dto.SenderId,
-                ReceiverId = dto.ReceiverId,
+                ReceiverId = dto.ReceiverId.Value, // null değilse kullan
                 MatchId = dto.MatchId,
                 Status = dto.Status
             };
-
 
             _context.Offers.Add(offer);
             await _context.SaveChangesAsync();
@@ -112,6 +156,7 @@ namespace Stadyum.API.Controllers
             return CreatedAtAction(nameof(GetOffer), new { id = offer.Id }, result);
         }
 
+
         // PUT: api/Offers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateOffer(int id, OfferCreateDTO dto)
@@ -121,8 +166,11 @@ namespace Stadyum.API.Controllers
             if (offer == null)
                 return NotFound();
 
+            if (dto.SenderId <= 0 || dto.MatchId <= 0 || dto.ReceiverId == null)
+                return BadRequest("Geçersiz veri: Tüm alanlar doldurulmalıdır.");
+
             offer.SenderId = dto.SenderId;
-            offer.ReceiverId = dto.ReceiverId;
+            offer.ReceiverId = dto.ReceiverId.Value; // null değilse güvenli
             offer.MatchId = dto.MatchId;
             offer.Status = dto.Status;
 
@@ -130,6 +178,7 @@ namespace Stadyum.API.Controllers
 
             return NoContent();
         }
+
         //ekleme update
         [HttpPut("update-status/{id}")]
         public async Task<IActionResult> UpdateOfferStatus(int id, [FromBody] OfferStatusUpdateDTO dto)
@@ -174,11 +223,13 @@ namespace Stadyum.API.Controllers
         [HttpGet("accepted-by-match/{matchId}")]
         public async Task<ActionResult<IEnumerable<OfferDTO>>> GetAcceptedOffersByMatch(int matchId)
         {
-            var offers = await _context.Offers
+            var acceptedOffers = await _context.Offers
                 .Where(o => o.MatchId == matchId && o.Status == "Accepted")
+                .GroupBy(o => o.ReceiverId)
+                .Select(g => g.OrderByDescending(o => o.Id).First())
                 .ToListAsync();
 
-            var offerDTOs = offers.Select(o => new OfferDTO
+            var offerDTOs = acceptedOffers.Select(o => new OfferDTO
             {
                 Id = o.Id,
                 SenderId = o.SenderId,
@@ -193,6 +244,11 @@ namespace Stadyum.API.Controllers
 
             return Ok(offerDTOs);
         }
+
+
+
+
+
 
 
 

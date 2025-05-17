@@ -18,6 +18,12 @@ namespace Stadyum.API.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Offer> Offers { get; set; }
         public DbSet<Player> Players { get; set; }
+        
+        public DbSet<Like> Likes { get; set; } 
+        public DbSet<Attendance> Attendances { get; set; } 
+        public DbSet<MatchStat> MatchStats { get; set; } 
+        public DbSet<Notification> Notifications { get; set; } 
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +34,10 @@ namespace Stadyum.API.Data
             modelBuilder.Entity<Offer>().ToTable("Offers");
             modelBuilder.Entity<Review>().ToTable("Reviews");
             modelBuilder.Entity<TeamMember>().ToTable("TeamMembers");
+            modelBuilder.Entity<Like>().ToTable("Likes");
+            modelBuilder.Entity<Attendance>().ToTable("Attendances");
+            modelBuilder.Entity<MatchStat>().ToTable("MatchStats");
+            modelBuilder.Entity<Notification>().ToTable("Notifications");
 
             // Player <-> Team ilişkisi
             modelBuilder.Entity<Player>()
@@ -84,6 +94,56 @@ namespace Stadyum.API.Data
                 .WithMany()
                 .HasForeignKey(o => o.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Like ilişkilendirmesi
+            modelBuilder.Entity<Like>()
+                .HasOne(l => l.Player)
+                .WithMany()
+                .HasForeignKey(l => l.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Like>()
+                .HasOne(l => l.Match)
+                .WithMany()
+                .HasForeignKey(l => l.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Attendance ilişkilendirmesi
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Player)
+                .WithMany()
+                .HasForeignKey(a => a.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Match)
+                .WithMany()
+                .HasForeignKey(a => a.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // MatchStat ilişkilendirmesi
+            modelBuilder.Entity<MatchStat>()
+                .HasOne(ms => ms.Player)
+                .WithMany()
+                .HasForeignKey(ms => ms.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MatchStat>()
+                .HasOne(ms => ms.Match)
+                .WithMany()
+                .HasForeignKey(ms => ms.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Notification ilişkilendirmesi
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Player)
+                .WithMany()
+                .HasForeignKey(n => n.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+
+
 
         }
 

@@ -11,7 +11,7 @@ namespace Stadyum.API.Models
         public Player? Sender { get; set; }
 
         [ForeignKey("Receiver")]
-        public int ReceiverId { get; set; }
+        public int? ReceiverId { get; set; }
         public Player? Receiver { get; set; }
 
         [ForeignKey("Match")]

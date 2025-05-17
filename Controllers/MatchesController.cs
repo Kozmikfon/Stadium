@@ -128,6 +128,51 @@ namespace Stadyum.API.Controllers
             return CreatedAtAction(nameof(GetMatch), new { id = match.Id }, result);
         }
 
+
+
+
+        [HttpGet("calendar")]
+        public async Task<IActionResult> GetAllMatchesForCalendar()
+        {
+            var matches = await _context.Matches
+                .Include(m => m.Team1)
+                .Include(m => m.Team2)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.MatchDate,
+                    m.FieldName,
+                    Team1Name = m.Team1.Name,
+                    Team2Name = m.Team2.Name
+                })
+                .ToListAsync();
+
+            return Ok(matches);
+        }
+
+        // MatchesController.cs
+        [HttpGet("byPlayer/{playerId}")]
+        public async Task<IActionResult> GetMatchesByPlayer(int playerId)
+        {
+            var player = await _context.Players
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.Id == playerId);
+
+            if (player?.Team == null)
+                return NotFound("Oyuncunun takımı yok.");
+
+            var matches = await _context.Matches
+                .Where(m => m.Team1Id == player.Team.Id || m.Team2Id == player.Team.Id)
+                .ToListAsync();
+
+            return Ok(matches);
+        }
+
+
+
+
+
+
         // PUT: api/Matches/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMatch(int id, MatchCreateDTO dto)
