@@ -70,21 +70,39 @@ namespace Stadyum.API.Controllers
             }
             // Kullanıcının Player kaydı var mı kontrol et
             var player = _context.Players.FirstOrDefault(p => p.UserId == user.Id);
+            if (player == null)
+            {
+                var newPlayer = new Player
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Position = user.Position,
+                    SkillLevel = user.SkillLevel,
+                    Rating = user.Rating,
+                    CreateAd = DateTime.UtcNow
+                };
+
+                _context.Players.Add(newPlayer);
+                _context.SaveChanges();
+                player = newPlayer; // ✅ En önemli satır!
+            }
 
             string role = player != null ? "Player" : "User";
-            var token = GenerateJwtToken(user, player?.Id);
+            var token = GenerateJwtToken(user, player?.Id, role);
 
             return Ok(new { Token = token, Role = role }); // Küçük harf dikkat!
         }
 
-        private string GenerateJwtToken(User user, int? playerId)
+        private string GenerateJwtToken(User user, int? playerId,string role)
         {
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim("userId",user.Id.ToString()),
-                new Claim("role","User")
+                new Claim("role",role)
             };
 
             if (playerId.HasValue)

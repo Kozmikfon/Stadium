@@ -129,14 +129,14 @@ namespace Stadyum.API.Controllers
             if (dto.SenderId <= 0 || dto.MatchId <= 0)
                 return BadRequest("SenderId ve MatchId zorunludur.");
 
-            // ReceiverId boş olabilir ama maç için teklifse null gelmemeli
-            if (dto.ReceiverId == null)
-                return BadRequest("ReceiverId boş olamaz.");
+            // ✅ Eğer receiverId gerekli değilse bu kontrolü kaldır
+            // Not: eğer sadece belirli durumlarda gerekliyse, özel kontrol yap
+            // Örneğin: if (dto.Type == "Direct") { receiverId zorunlu }
 
             var offer = new Offer
             {
                 SenderId = dto.SenderId,
-                ReceiverId = dto.ReceiverId.Value, // null değilse kullan
+                ReceiverId = dto.ReceiverId, // null olabilir
                 MatchId = dto.MatchId,
                 Status = dto.Status
             };
@@ -155,6 +155,7 @@ namespace Stadyum.API.Controllers
 
             return CreatedAtAction(nameof(GetOffer), new { id = offer.Id }, result);
         }
+
 
 
         // PUT: api/Offers/5
@@ -223,27 +224,47 @@ namespace Stadyum.API.Controllers
         [HttpGet("accepted-by-match/{matchId}")]
         public async Task<ActionResult<IEnumerable<OfferDTO>>> GetAcceptedOffersByMatch(int matchId)
         {
-            var acceptedOffers = await _context.Offers
-                .Where(o => o.MatchId == matchId && o.Status == "Accepted")
+            var groupedOffers = await _context.Offers
+                .Where(o => o.MatchId == matchId && o.Status == "Accepted" && o.ReceiverId != null)
                 .GroupBy(o => o.ReceiverId)
-                .Select(g => g.OrderByDescending(o => o.Id).First())
                 .ToListAsync();
 
-            var offerDTOs = acceptedOffers.Select(o => new OfferDTO
+
+            var latestOffers = groupedOffers
+                .Select(g => g.OrderByDescending(o => o.Id).FirstOrDefault())
+                .Where(o => o != null) // 💥 null gelenleri filtrele
+                .ToList();
+
+            var offerDTOs = latestOffers.Select(o =>
             {
-                Id = o.Id,
-                SenderId = o.SenderId,
-                ReceiverId = o.ReceiverId,
-                MatchId = o.MatchId,
-                Status = o.Status,
-                ReceiverName = _context.Players
-                    .Where(p => p.Id == o.ReceiverId)
-                    .Select(p => p.FirstName + " " + p.LastName)
-                    .FirstOrDefault()
+                string? receiverName = null;
+
+                if (o!.ReceiverId.HasValue) // o artık null değil ama yine ! kullan
+                {
+                    var receiver = _context.Players
+                        .Where(p => p.Id == o.ReceiverId.Value)
+                        .Select(p => new { p.FirstName, p.LastName })
+                        .FirstOrDefault();
+
+                    if (receiver != null)
+                        receiverName = $"{receiver.FirstName} {receiver.LastName}";
+                }
+
+                return new OfferDTO
+                {
+                    Id = o.Id,
+                    SenderId = o.SenderId,
+                    ReceiverId = o.ReceiverId,
+                    MatchId = o.MatchId,
+                    Status = o.Status,
+                    ReceiverName = receiverName
+                };
             }).ToList();
 
             return Ok(offerDTOs);
         }
+
+
 
 
 
