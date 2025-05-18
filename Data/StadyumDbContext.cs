@@ -22,7 +22,9 @@ namespace Stadyum.API.Data
         public DbSet<Like> Likes { get; set; } 
         public DbSet<Attendance> Attendances { get; set; } 
         public DbSet<MatchStat> MatchStats { get; set; } 
-        public DbSet<Notification> Notifications { get; set; } 
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<CommentLike> CommentLikes { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,6 +40,7 @@ namespace Stadyum.API.Data
             modelBuilder.Entity<Attendance>().ToTable("Attendances");
             modelBuilder.Entity<MatchStat>().ToTable("MatchStats");
             modelBuilder.Entity<Notification>().ToTable("Notifications");
+            modelBuilder.Entity<CommentLike>().ToTable("CommentLikes");
 
             // Player <-> Team ilişkisi
             modelBuilder.Entity<Player>()

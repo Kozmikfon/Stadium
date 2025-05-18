@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 //  JWT Ayarlarý
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-
+builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -27,7 +27,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+
 
 //  DbContext Ayarlarý (Database Baðlantýsý)
 builder.Services.AddDbContext<StadyumDbContext>(options =>
@@ -104,11 +104,12 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseCors("AllowAll");
 app.UseAuthentication(); // JWT doðrulama
 app.UseAuthorization(); // Yetkilendirme
-app.UseCors("AllowAll");
-app.UseRouting();
+
+
 
 //  Endpoint Tanýmlamalarý
 app.MapControllers();

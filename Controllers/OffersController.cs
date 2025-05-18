@@ -132,7 +132,17 @@ namespace Stadyum.API.Controllers
             // ✅ Eğer receiverId gerekli değilse bu kontrolü kaldır
             // Not: eğer sadece belirli durumlarda gerekliyse, özel kontrol yap
             // Örneğin: if (dto.Type == "Direct") { receiverId zorunlu }
+            // ✅ Mevcut aynı teklif kontrolü:
 
+
+            bool alreadyExists = await _context.Offers.AnyAsync(o =>
+                o.SenderId == dto.SenderId &&
+                o.MatchId == dto.MatchId &&
+                o.ReceiverId == dto.ReceiverId // hem oyuncuya hem maça özel kontrolü kapsar
+            );
+
+            if (alreadyExists)
+                return BadRequest("Bu teklifi zaten gönderdiniz.");
             var offer = new Offer
             {
                 SenderId = dto.SenderId,
