@@ -150,6 +150,7 @@ namespace Stadyum.API.Controllers
                 MatchId = dto.MatchId,
                 Status = dto.Status
             };
+           
 
             _context.Offers.Add(offer);
             await _context.SaveChangesAsync();

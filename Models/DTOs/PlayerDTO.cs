@@ -16,6 +16,5 @@
     }
 
 
-    // İç içe detay göstermemek için sadeleştirilmiş Team
 
 }

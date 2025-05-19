@@ -40,6 +40,6 @@ namespace Stadyum.API.Models
         [ForeignKey("UserId")]
         public User User { get; set; }
 
-
+        public bool IsAdmin { get; set; } = false;
     }
 }

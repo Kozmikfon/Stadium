@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddAuthorization();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -23,7 +24,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            RoleClaimType = "role"
         };
     });
 
@@ -39,15 +41,9 @@ builder.Services.AddDbContext<StadyumDbContext>(options =>
 
 //  Swagger Yapýlandýrmasý
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Stadyum.API",
-        Version = "v1"
-    });
-
-    // JWT için yetkilendirme
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -73,6 +69,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
 
 //  Controller Tanýmý
 builder.Services.AddControllers();
@@ -111,8 +109,10 @@ app.UseAuthorization(); // Yetkilendirme
 
 
 
-//  Endpoint Tanýmlamalarý
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 //  Test Endpoint'i
 var summaries = new[]

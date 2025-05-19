@@ -4,13 +4,13 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public int CaptainId { get; set; } // KaptanId zorunlu
+        public int CaptainId { get; set; } 
 
         public PlayerDTO? Captain { get; set; }
         public List<PlayerDTO>? Players { get; set; }
     }
 
-    // Detay içermeyen sadeleştirilmiş oyuncu gösterimi
+    
     public class PlayerBasicDTO
     {
         public int Id { get; set; }

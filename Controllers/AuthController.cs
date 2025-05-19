@@ -52,6 +52,8 @@ namespace Stadyum.API.Controllers
         }
 
 
+
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -89,21 +91,28 @@ namespace Stadyum.API.Controllers
                 player = newPlayer; // ✅ En önemli satır!
             }
 
-            string role = player != null ? "Player" : "User";
+
+
+            string role = player?.IsAdmin == true ? "Admin" : "Player";
+
             var token = GenerateJwtToken(user, player?.Id, role);
 
             return Ok(new { Token = token, Role = role }); // Küçük harf dikkat!
         }
 
+
+
         private string GenerateJwtToken(User user, int? playerId,string role)
         {
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub,user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                new Claim("userId",user.Id.ToString()),
-                new Claim("role",role)
-            };
+{
+    new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+    new Claim("userId", user.Id.ToString()),
+    new Claim("playerId", playerId?.ToString() ?? ""),
+    new Claim(ClaimTypes.Role, role) // <--- BURASI
+};
+
 
             if (playerId.HasValue)
             {
