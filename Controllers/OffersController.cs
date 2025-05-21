@@ -53,8 +53,9 @@ namespace Stadyum.API.Controllers
         {
             var offers = await _context.Offers
                 .Include(o => o.Match)
-                    .ThenInclude(m => m.Team1) // kaptan Team1'de olabilir
-                .Include(o => o.Match.Team1.Captain) // kaptan bilgisi için
+                    .ThenInclude(m => m.Team1)
+                .Include(o => o.Match.Team1.Captain)
+                .Include(o => o.Sender) // ✅ sender bilgisi için eklendi
                 .Where(o => o.ReceiverId == playerId)
                 .Select(o => new OfferDTO
                 {
@@ -64,15 +65,22 @@ namespace Stadyum.API.Controllers
                     MatchId = o.MatchId,
                     Status = o.Status,
 
-                    // 👇 Eklenen alanlar
                     FieldName = o.Match.FieldName,
                     MatchDate = o.Match.MatchDate,
-                    CaptainName = o.Match.Team1.Captain.FirstName + " " + o.Match.Team1.Captain.LastName
+                    CaptainName = o.Match.Team1.Captain.FirstName + " " + o.Match.Team1.Captain.LastName,
+
+                    MatchTeamName = o.Match.Team1.Name,
+                    MatchFieldName = o.Match.FieldName,
+                    MatchCaptainName = o.Match.Team1.Captain.FirstName + " " + o.Match.Team1.Captain.LastName,
+
+                    SenderName = o.Sender.FirstName + " " + o.Sender.LastName // ✅ yeni eklenen alan
                 })
                 .ToListAsync();
 
             return Ok(offers);
         }
+
+
 
         [HttpGet("byCaptain/{playerId}")]
         public async Task<IActionResult> GetOffersByCaptain(int playerId)

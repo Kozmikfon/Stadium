@@ -14,5 +14,10 @@
         public string? FieldName { get; set; }
         public string? CaptainName { get; set; }
         public DateTime MatchDate { get; set; }
+        public string? MatchTeamName { get; set; }   // Takım adı (örneğin Team1)
+        public string? MatchFieldName { get; set; }  // Saha adı
+        public string? MatchCaptainName { get; set; } // Kaptan adı
+        public string? SenderName { get; set; }
+
     }
 }

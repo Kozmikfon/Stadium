@@ -280,6 +280,37 @@ namespace Stadyum.API.Controllers
             return Ok(tournamentTeams);
         }
 
+        //turnuva takım olusturma
+        [HttpPost("create-tournament-team")]
+        public async Task<IActionResult> CreateTournamentTeam([FromBody] TeamCreateDTO dto)
+        {
+            var team = new Team
+            {
+                Name = dto.Name,
+                CaptainId = dto.CaptainId,
+                IsInTournament = true
+            };
+
+            _context.Teams.Add(team);
+            await _context.SaveChangesAsync();
+
+            return Ok(team);
+        }
+
+        //turnuva takım ekleme
+        [HttpPut("add-to-tournament/{teamId}")]
+        public async Task<IActionResult> AddTeamToTournament(int teamId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) return NotFound("Takım bulunamadı.");
+
+            team.IsInTournament = true;
+            await _context.SaveChangesAsync();
+
+            return Ok("Takım turnuvaya eklendi.");
+        }
+
+
 
         // 🔹 Takımı güncelle
         [HttpPut("{id}")]
