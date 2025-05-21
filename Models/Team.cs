@@ -20,5 +20,8 @@ namespace Stadyum.API.Models
 
         // Oyuncular listesi
         public ICollection<Player> Players { get; set; } = new List<Player>();
+
+        public bool IsInTournament { get; set; } = false;
+
     }
 }

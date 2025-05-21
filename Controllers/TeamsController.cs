@@ -255,6 +255,32 @@ namespace Stadyum.API.Controllers
             return NoContent();
         }
 
+        // kaptan seçme
+        [HttpPut("assign-captain")]
+        public async Task<IActionResult> AssignCaptain(int teamId, int newCaptainId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) return NotFound();
+
+            team.CaptainId = newCaptainId;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        //turnuva
+        // GET: api/Teams/tournament-teams
+        [HttpGet("tournament-teams")]
+        public async Task<IActionResult> GetTournamentTeams()
+        {
+            var tournamentTeams = await _context.Teams
+                .Where(t => t.IsInTournament == true)
+                .ToListAsync();
+
+            return Ok(tournamentTeams);
+        }
+
+
         // 🔹 Takımı güncelle
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTeam(int id, [FromBody] TeamUpdateDTO dto)

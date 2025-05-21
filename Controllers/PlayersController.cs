@@ -88,6 +88,7 @@ namespace Stadyum.API.Controllers
             // Sadece gerekli alanlar güncelleniyor
             player.Email = dto.Email;
             player.Position = dto.Position;
+            
 
             _context.Entry(player).State = EntityState.Modified;
 
@@ -197,6 +198,47 @@ namespace Stadyum.API.Controllers
 
             return Ok(playerDTO);
         }
+
+
+        //web için [HttpGet("top")]
+        // 🔹 En iyi oyuncular (rating sıralı)
+        [HttpGet("top")]
+        public async Task<IActionResult> GetTopPlayers()
+        {
+            var topPlayers = await _context.Players
+                .OrderByDescending(p => p.Rating)
+                .Take(5)
+                .Select(p => new
+                {
+                    p.FirstName,
+                    p.LastName,
+                    p.Rating
+                })
+                .ToListAsync();
+
+            return Ok(topPlayers);
+        }
+
+        //takım olusturma sarti
+        [HttpGet("{playerId}/upcoming-matches")]
+        public async Task<IActionResult> GetUpcomingMatches(int playerId)
+        {
+            var player = await _context.Players
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.Id == playerId);
+
+            if (player == null || player.TeamId == null)
+                return Ok(new List<Match>());
+
+            var upcomingMatches = await _context.Matches
+                .Where(m =>
+                    (m.Team1Id == player.TeamId || m.Team2Id == player.TeamId) &&
+                    m.MatchDate >= DateTime.Now.AddHours(-12))
+                .ToListAsync();
+
+            return Ok(upcomingMatches);
+        }
+
 
 
         // 🔹 Oyuncu sil

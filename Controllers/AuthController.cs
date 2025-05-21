@@ -51,6 +51,20 @@ namespace Stadyum.API.Controllers
             return Ok(new { message = "Kullanıcı başarıyla kaydedildi." });
         }
 
+        //sifre degistir
+        // AuthController.cs içerisine ekle
+        [HttpPut("change-password/{userId}")]
+        public async Task<IActionResult> ChangePassword(int userId, [FromBody] string newPassword)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            user.PasswordHash = newPassword;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Şifre güncellendi.");
+        }
 
 
 
@@ -106,12 +120,14 @@ namespace Stadyum.API.Controllers
         {
             var claims = new List<Claim>
 {
-    new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    new Claim("userId", user.Id.ToString()),
-    new Claim("playerId", playerId?.ToString() ?? ""),
-    new Claim(ClaimTypes.Role, role) // <--- BURASI
-};
+             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+             new Claim("userId", user.Id.ToString()),
+             new Claim("playerId", playerId?.ToString() ?? ""),
+             new Claim("role", role), // 🔥 bunu eklersen token içinden rahat çekersin
+             new Claim(ClaimTypes.Role, role) // eski hali
+};  
+
 
 
             if (playerId.HasValue)

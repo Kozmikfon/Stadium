@@ -170,7 +170,44 @@ namespace Stadyum.API.Controllers
 
 
 
+        //web için
+        [HttpGet("upcoming")]
+        public async Task<IActionResult> GetUpcomingMatches()
+        {
+            var upcomingMatches = await _context.Matches
+                .Include(m => m.Team1)
+                .Include(m => m.Team2)
+                .Where(m => m.MatchDate >= DateTime.Now)
+                .OrderBy(m => m.MatchDate)
+                .Take(5)
+                .Select(m => new
+                {
+                    m.MatchDate,
+                    Team1Name = m.Team1.Name,
+                    Team2Name = m.Team2.Name
+                })
+                .ToListAsync();
 
+            return Ok(upcomingMatches);
+        }
+
+        // turnuva macları
+        [HttpGet("tournament-matches")]
+        public async Task<IActionResult> GetTournamentMatches()
+        {
+            var tournamentTeamIds = await _context.Teams
+                .Where(t => t.IsInTournament == true)
+                .Select(t => t.Id)
+                .ToListAsync();
+
+            var matches = await _context.Matches
+                .Include(m => m.Team1)
+                .Include(m => m.Team2)
+                .Where(m => tournamentTeamIds.Contains(m.Team1Id) && tournamentTeamIds.Contains(m.Team2Id))
+                .ToListAsync();
+
+            return Ok(matches);
+        }
 
 
         // PUT: api/Matches/5

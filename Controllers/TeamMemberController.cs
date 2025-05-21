@@ -92,23 +92,53 @@ namespace Stadyum.API.Controllers
             return CreatedAtAction(nameof(GetTeamMember), new { id = teamMember.Id }, result);
         }
 
-        //takımdan ayrıl
+        // ✅ Takımdan ayrılma endpoint'i
         [HttpDelete("leave/{playerId}")]
         public async Task<IActionResult> LeaveTeam(int playerId)
         {
             var membership = await _context.TeamMembers.FirstOrDefaultAsync(m => m.PlayerId == playerId);
-            if (membership == null)
-                return NotFound("Üyelik bulunamadı.");
-
-            _context.TeamMembers.Remove(membership);
-
             var player = await _context.Players.FindAsync(playerId);
+
+            if (membership == null && player?.TeamId == null)
+                return NotFound("Oyuncunun bir takım üyeliği bulunamadı.");
+
+            // 👇 Kaptan kontrolü
+            if (player?.TeamId != null)
+            {
+                var team = await _context.Teams
+                    .Include(t => t.Players)
+                    .FirstOrDefaultAsync(t => t.Id == player.TeamId);
+
+                if (team != null && team.CaptainId == playerId)
+                {
+                    var otherPlayers = team.Players.Where(p => p.Id != playerId).ToList();
+                    if (otherPlayers.Count > 0)
+                    {
+                        return BadRequest("⚠️ Kaptan takımdan ayrılamaz. Önce yeni bir kaptan atamalısınız.");
+                    }
+
+                    // Eğer kaptan ve takımda tek kişi kaldıysa, takımı silebiliriz (isteğe bağlı)
+                    // _context.Teams.Remove(team); // ← yorumda bırakıyorum
+                }
+            }
+
+            if (membership != null)
+                _context.TeamMembers.Remove(membership);
+
             if (player != null)
+            {
                 player.TeamId = null;
+                _context.Players.Update(player);
+            }
 
             await _context.SaveChangesAsync();
-            return Ok("Takımdan ayrılındı.");
+            return Ok("✅ Takımdan başarıyla ayrıldınız.");
         }
+
+
+
+
+
 
 
 
@@ -117,14 +147,22 @@ namespace Stadyum.API.Controllers
         public async Task<IActionResult> DeleteTeamMember(int id)
         {
             var teamMember = await _context.TeamMembers.FindAsync(id);
-
             if (teamMember == null)
                 return NotFound();
+
+            // 🎯 İlgili oyuncuyu da bul
+            var player = await _context.Players.FindAsync(teamMember.PlayerId);
+            if (player != null)
+            {
+                player.TeamId = null; // 🔥 Takım ilişkisini kaldır
+                _context.Players.Update(player);
+            }
 
             _context.TeamMembers.Remove(teamMember);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("Takımdan ayrılındı.");
         }
+
     }
 }
