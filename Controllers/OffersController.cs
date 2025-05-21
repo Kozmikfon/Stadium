@@ -79,6 +79,8 @@ namespace Stadyum.API.Controllers
 
             return Ok(offers);
         }
+        //kaptana gelen teklifler
+
 
 
 
@@ -91,7 +93,6 @@ namespace Stadyum.API.Controllers
             if (team == null)
                 return NotFound("Kaptan takımı bulunamadı.");
 
-            // O takımın oynayacağı tüm maçlar
             var matchIds = await _context.Matches
                 .Where(m => m.Team1Id == team.Id || m.Team2Id == team.Id)
                 .Select(m => m.Id)
@@ -101,10 +102,21 @@ namespace Stadyum.API.Controllers
                 .Include(o => o.Sender)
                 .Include(o => o.Match)
                 .Where(o => matchIds.Contains(o.MatchId))
+                .Select(o => new OfferDTO
+                {
+                    Id = o.Id,
+                    SenderId = o.SenderId,
+                    MatchId = o.MatchId,
+                    Status = o.Status,
+                    FieldName = o.Match.FieldName,
+                    MatchDate = o.Match.MatchDate,
+                    SenderName = o.Sender.FirstName + " " + o.Sender.LastName
+                })
                 .ToListAsync();
 
             return Ok(offers);
         }
+
 
 
 
