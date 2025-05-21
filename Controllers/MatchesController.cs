@@ -208,6 +208,31 @@ namespace Stadyum.API.Controllers
 
             return Ok(matches);
         }
+        //turnuva macı olusturma
+        [HttpPost("create-tournament-match")]
+        public async Task<IActionResult> CreateTournamentMatch([FromBody] MatchCreateDTO dto)
+        {
+            var team1 = await _context.Teams.FindAsync(dto.Team1Id);
+            var team2 = await _context.Teams.FindAsync(dto.Team2Id);
+
+            if (team1 == null || team2 == null)
+                return BadRequest("Takımlar bulunamadı.");
+            if (!team1.IsInTournament || !team2.IsInTournament)
+                return BadRequest("Her iki takım da turnuvada olmalı.");
+
+            var match = new Match
+            {
+                Team1Id = dto.Team1Id,
+                Team2Id = dto.Team2Id,
+                MatchDate = dto.MatchDate,
+                FieldName = dto.FieldName
+            };
+
+            _context.Matches.Add(match);
+            await _context.SaveChangesAsync();
+
+            return Ok(match);
+        }
 
 
         // PUT: api/Matches/5
